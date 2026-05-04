@@ -1,0 +1,10 @@
+uproot==5.2.2
+pandas==2.2.0
+awkward==2.6.1
+torch==2.2.0
+torch-geometric==2.5.0
+pennylane==0.35.1
+qiskit-aer[gpu]==0.13.3
+cuquantum==23.10.0
+matplotlib==3.8.2
+numpy==1.26.4

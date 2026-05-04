@@ -1,0 +1,5 @@
+numpy==1.26.4
+scipy==1.12.0
+matplotlib==3.8.2
+dimod==0.12.14
+dwave-neal==0.6.0
