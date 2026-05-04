@@ -1,7 +1,7 @@
 """
 P3_G2/main.py
-Orquestador de la Fase 1: U(1) Gauge Theory -> CNF -> Quimb
-Calcula la fluctuación del vacío electromagnético (Lattice 2D).
+Phase 1 Orchestrator: U(1) Gauge Theory -> CNF -> Quimb
+Calculates electromagnetic vacuum fluctuations (2D Lattice).
 """
 import os
 import numpy as np
@@ -17,99 +17,99 @@ def main():
     print("  P3_G2: U(1) LATTICE | CNF | TENSOR NETWORKS  ")
     print("="*60)
     
-    # Parámetros del modelo de juguete
+    # Toy model parameters
     L = 8
-    beta = 1.0 # Acoplamiento inverso (Temperature-like parameter)
+    beta = 1.0 # Inverse coupling (Temperature-like parameter)
     
     # ==============================================================
-    # 1. GENERACIÓN DEL VACÍO CUÁNTICO (Lattice QCD análogo)
+    # 1. QUANTUM VACUUM GENERATION (Lattice QCD analog)
     # ==============================================================
-    print("\n>>> FASE A: Muestreo de la Sombra del Sustrato (HMC)")
+    print("\n>>> PHASE A: Substrate Shadow Sampling (HMC)")
     
-    # --- BENCHMARK DE PRECISIÓN: JAX vs RAW CUDA ---
+    # --- PRECISION BENCHMARK: JAX vs RAW CUDA ---
     try:
         from cuda_accelerator import action_cuda
         from lattice_hmc import action as action_jax
         import jax.numpy as jnp
         import time
         
-        print("\n[CUDA Benchmark] Inicializando Reactor C++...")
+        print("\n[CUDA Benchmark] Initializing C++ Reactor...")
         test_theta = np.random.uniform(-np.pi, np.pi, (2, L, L)).astype(np.float32)
         
-        # Test JAX
+        # JAX Test
         t0 = time.perf_counter()
         action_j = action_jax(jnp.array(test_theta), beta)
         t_jax = time.perf_counter() - t0
         
-        # Test CUDA (el primero suele ser más lento por la compilación JIT de NVCC, hacemos un warmup)
+        # CUDA Test (first run might be slower due to NVCC JIT compilation, doing a warmup)
         _ = action_cuda(test_theta, beta, L)
         
         t0 = time.perf_counter()
         action_c = action_cuda(test_theta, beta, L)
         t_cuda = time.perf_counter() - t0
         
-        print(f"  Acción JAX  : {action_j:.7f}")
-        print(f"  Acción CUDA : {action_c:.7f}")
+        print(f"  JAX Action  : {action_j:.7f}")
+        print(f"  CUDA Action : {action_c:.7f}")
         diff = abs(action_j - action_c)
         if diff < 1e-5:
-            print(f"  [SUCCESS] Precisión bit-perfect verificada (Diff: {diff:.2e})")
+            print(f"  [SUCCESS] Bit-perfect precision verified (Diff: {diff:.2e})")
         else:
-            print(f"  [WARNING] Divergencia detectada (Diff: {diff:.2e})")
-        print(f"  Tiempo JAX  : {t_jax*1000:.3f} ms")
-        print(f"  Tiempo CUDA : {t_cuda*1000:.3f} ms (¡Y bajando con grids más grandes!)")
+            print(f"  [WARNING] Divergence detected (Diff: {diff:.2e})")
+        print(f"  JAX Time  : {t_jax*1000:.3f} ms")
+        print(f"  CUDA Time : {t_cuda*1000:.3f} ms (Even faster with larger grids!)")
     except Exception as e:
         print(f"[CUDA Benchmark] Error: {e}")
         
     configs_hmc = generate_u1_configs(L=L, beta=beta, n_configs=200, n_steps=10, eps=0.1)
     
-    # Extraemos el observable físico primario: La Energía de Plaqueta
+    # Extract primary physical observable: Plaquette Energy
     import jax
     plaqs = [np.mean(np.cos(jax.device_get(plaquette(c)))) for c in configs_hmc]
-    print(f"[Física] Energía de Plaqueta Media (HMC): {np.mean(plaqs):.4f} +/- {np.std(plaqs):.4f}")
+    print(f"[Physics] Mean Plaquette Energy (HMC): {np.mean(plaqs):.4f} +/- {np.std(plaqs):.4f}")
     
     # ==============================================================
-    # 2. MACHINE LEARNING: APRENDIENDO LA CACHE (Normalizing Flows)
+    # 2. MACHINE LEARNING: CACHE LEARNING (Normalizing Flows)
     # ==============================================================
-    print("\n>>> FASE B: Entrenando el Oráculo Generativo (CNF)")
+    print("\n>>> PHASE B: Training Generative Oracle (CNF)")
     configs_ai = train_cnf(configs_hmc, epochs=50)
     
     plaqs_ai = [np.mean(np.cos(jax.device_get(plaquette(c)))) for c in configs_ai]
-    print(f"[Física] Energía de Plaqueta Media (IA): {np.mean(plaqs_ai):.4f} +/- {np.std(plaqs_ai):.4f}")
+    print(f"[Physics] Mean Plaquette Energy (AI): {np.mean(plaqs_ai):.4f} +/- {np.std(plaqs_ai):.4f}")
     
-    # Visualización de la asimilación del Campo de Coherencia
+    # Visualization of Coherence Field assimilation
     plt.figure(figsize=(9, 6))
-    plt.hist(plaqs, bins=15, alpha=0.6, label="Mecánica Cuántica (HMC)", density=True, color='blue')
-    plt.hist(plaqs_ai, bins=15, alpha=0.6, label="Inteligencia Artificial (CNF)", density=True, color='orange')
-    plt.xlabel("Energía de Plaqueta $cos(P_{01})$")
-    plt.ylabel("Densidad de Probabilidad")
-    plt.title("Generación del Vacío U(1): Muestreo Físico vs Reconstrucción IA")
+    plt.hist(plaqs, bins=15, alpha=0.6, label="Quantum Mechanics (HMC)", density=True, color='blue')
+    plt.hist(plaqs_ai, bins=15, alpha=0.6, label="Artificial Intelligence (CNF)", density=True, color='orange')
+    plt.xlabel("Plaquette Energy $cos(P_{01})$")
+    plt.ylabel("Probability Density")
+    plt.title("U(1) Vacuum Generation: Physical Sampling vs AI Reconstruction")
     plt.legend()
     plt.grid(alpha=0.3)
     
     filename = "vacuum_shadow.png"
     plt.savefig(filename)
-    print(f"[Main] Gráfico comparativo de la sombra guardado en '{filename}'.")
+    print(f"[Main] Comparative shadow plot saved to '{filename}'.")
     
-    print("\n[Main] Renderizando topología 3D en motor gráfico (PyVista)...")
+    print("\n[Main] Rendering 3D topology in graphics engine (PyVista)...")
     try:
-        plot_vacuum_3d(configs_ai[-1], title="Sombra del Vacio - Red Neuronal Generativa")
+        plot_vacuum_3d(configs_ai[-1], title="Vacuum Shadow - Generative Neural Network")
     except Exception as e:
-        print(f"[Main] Error lanzando visualización 3D: {e}")
+        print(f"[Main] Error launching 3D visualization: {e}")
     
     # ==============================================================
-    # 3. CONTRACCIÓN EXACTA (Redes Tensoriales)
+    # 3. EXACT CONTRACTION (Tensor Networks)
     # ==============================================================
-    print("\n>>> FASE C: Contracción Analítica del Tensor Network")
-    # Reducimos L a 4 para garantizar que la contracción exacta local sea viable en segundos
+    print("\n>>> PHASE C: Analytical Contraction of Tensor Network")
+    # Reduce L to 4 to ensure exact local contraction is viable within seconds
     contract_lattice(L=4, beta=beta) 
     
     # ==============================================================
-    # 4. TRACKING SOBERANO (DevOps del Vacío)
+    # 4. SOVEREIGN TRACKING (Vacuum DevOps)
     # ==============================================================
-    print("\n[Tracking] Registrando métricas en la base de datos central...")
+    print("\n[Tracking] Logging metrics to central database...")
     try:
         import sys
-        # Añadir la ruta del directorio padre (QUANTUM_LAB) al path
+        # Add parent directory (QUANTUM_LAB) to path
         sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         from tracking import log_experiment
         
@@ -123,13 +123,13 @@ def main():
                 "free_energy": -0.949509
             },
             artifacts=["vacuum_shadow.png", "main.py"],
-            notes="Ejecución con aceleración C++ CUDA nativa y renderizado PyVista 3D."
+            notes="Execution with native C++ CUDA acceleration and PyVista 3D rendering."
         )
     except Exception as e:
-        print(f"[Tracking] Error al conectar con la BD SQLite: {e}")
+        print(f"[Tracking] Error connecting to SQLite DB: {e}")
 
     print("\n" + "="*60)
-    print(" FASE 1 COMPLETADA. LA CACHE DEL SUSTRATO HA SIDO DESCODIFICADA. ")
+    print(" PHASE 1 COMPLETED. SUBSTRATE CACHE HAS BEEN DECODED. ")
     print("="*60)
 
 if __name__ == "__main__":
