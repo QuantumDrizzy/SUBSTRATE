@@ -75,7 +75,7 @@ QUANTUM_LAB/
 
 ---
 
-## the CUDA kernel
+## the CUDA kernel & Profiling
 
 The plaquette action kernel maps each lattice site to a CUDA thread. The gauge field U(1) action is computed as:
 
@@ -83,7 +83,10 @@ The plaquette action kernel maps each lattice site to a CUDA thread. The gauge f
 S = -β Σ Re(U_μ(n) · U_ν(n+μ) · U_μ(n+ν)* · U_ν(n)*)
 ```
 
-Each thread computes one plaquette. Block reduction via `__syncthreads()`. The kernel achieves **354× speedup** over JAX with sub-microsecond precision (diff < 5e-07).
+**Optimization via Nsight Compute:** 
+Initial profiling of the JAX implementation using `ncu` (Nsight Compute) revealed severe memory bandwidth bottlenecks due to uncoalesced global memory accesses and high kernel launch overheads. 
+
+To resolve this, I rewrote the computation as a native C++ RawKernel. Each thread computes one plaquette, utilizing block-level reduction via `__syncthreads()` and utilizing shared memory to minimize VRAM roundtrips. This restructuring increased occupancy and achieved a **354× speedup** over the JAX baseline with sub-microsecond precision (diff < 5e-07).
 
 ```cpp
 __global__ void compute_plaquette_kernel(
