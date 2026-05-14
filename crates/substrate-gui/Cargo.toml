@@ -1,0 +1,18 @@
+[package]
+name    = "substrate-gui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+substrate-core = { path = "../substrate-core" }
+substrate-db   = { path = "../substrate-db" }
+substrate-gpu  = { path = "../substrate-gpu" }
+bytemuck       = { workspace = true }
+eframe         = { workspace = true }
+egui_plot      = { workspace = true }
+serde          = { workspace = true }
+serde_json     = { workspace = true }
+chrono         = { workspace = true }
+anyhow         = { workspace = true }
+tokio          = { workspace = true }
+tracing        = { workspace = true }

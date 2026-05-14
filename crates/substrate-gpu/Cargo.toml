@@ -1,0 +1,8 @@
+[package]
+name    = "substrate-gpu"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe   = { workspace = true }
+bytemuck = { workspace = true }

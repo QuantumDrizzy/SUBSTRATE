@@ -1,0 +1,22 @@
+[build-system]
+requires      = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name    = "substrate-engine"
+version = "0.1.0"
+description = "Python ML engine layers for the SUBSTRATE unified measurement system"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "scikit-learn",
+    "torch",
+    "pyarrow",
+    "matplotlib",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["engine*"]

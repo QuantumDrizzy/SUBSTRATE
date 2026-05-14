@@ -1,0 +1,11 @@
+[package]
+name = "terra-dashboard"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe = { version = "0.31", features = ["wgpu"] }
+egui = "0.31"
+memmap2 = "0.9"
+serde = { version = "1", features = ["derive"] }
+chrono = "0.4"

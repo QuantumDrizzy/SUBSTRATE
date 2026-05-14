@@ -1,0 +1,76 @@
+# cycle_project — canonical data source registry
+# verified: true  → URL confirmed accessible as of 2025-Q1
+# verified: false → filename/path may have changed; browse parent dir
+
+proxies:
+
+  gisp2_d18o:
+    url: "https://www.ncei.noaa.gov/pub/data/paleo/icecore/greenland/summit/gisp2/isotopes/gisp2_d18o_accum_alley2000.txt"
+    local: "data/raw/gisp2_d18o_alley2000.txt"
+    reference: "Alley 2000, J. Quaternary Sci. 15(6)"
+    time_range_bp: [0, 110000]
+    resolution_yr: ~20
+    verified: true
+
+  vostok_deuterium:
+    url: "https://www.ncei.noaa.gov/pub/data/paleo/icecore/antarctica/vostok/deutnat.txt"
+    local: "data/raw/vostok_deutnat.txt"
+    reference: "Petit et al. 1999, Nature 399"
+    time_range_bp: [0, 422000]
+    resolution_yr: ~200
+    verified: true
+
+  vostok_co2:
+    url: "https://www.ncei.noaa.gov/pub/data/paleo/icecore/antarctica/vostok/co2nat.txt"
+    local: "data/raw/vostok_co2nat.txt"
+    reference: "Petit et al. 1999, Nature 399"
+    time_range_bp: [0, 422000]
+    resolution_yr: ~400
+    verified: true
+
+  grip_be10:
+    url: "https://www.ncei.noaa.gov/pub/data/paleo/icecore/greenland/summit/grip/beryllium/grip_be10_muscheler2004.txt"
+    local: "data/raw/grip_be10.txt"
+    reference: "Muscheler et al. 2004, Quat. Sci. Rev. 23"
+    time_range_bp: [0, 110000]
+    resolution_yr: ~10
+    verified: false  # ⚠️ browse: https://www.ncei.noaa.gov/pub/data/paleo/icecore/greenland/summit/grip/beryllium/
+
+  sint2000:
+    url: "https://www.ngdc.noaa.gov/geomag/paleo_mag_datasets/Sint-2000.txt"
+    local: "data/raw/sint2000.txt"
+    reference: "Valet et al. 2005, Nature 435"
+    time_range_bp: [0, 2000000]
+    resolution_yr: 1000
+    verified: false  # ⚠️ fallback: PANGAEA DOI:10.1594/PANGAEA.186810
+
+supplementary:
+
+  sea_level_spratt:
+    url: "https://www.ncei.noaa.gov/pub/data/paleo/contributions_by_author/spratt2016/spratt2016.txt"
+    local: "data/raw/spratt2016_sea_level.txt"
+    reference: "Spratt & Lisiecki 2016, Clim. Past 12"
+    verified: true
+
+  lr04_benthic:
+    url: "https://www.ncei.noaa.gov/pub/data/paleo/contributions_by_author/lisiecki2005/lisiecki2005.txt"
+    local: "data/raw/lisiecki2005_lr04.txt"
+    reference: "Lisiecki & Raymo 2005, Paleoceanography 20"
+    verified: true
+
+  intcal20_radiocarbon:
+    url: "https://intcal.org/curves/intcal20.14c"
+    local: "data/raw/intcal20.14c"
+    reference: "Reimer et al. 2020, Radiocarbon 62(4)"
+    verified: true
+
+real_time:
+  noaa_swpc_f107:
+    url: "https://services.swpc.noaa.gov/json/f107_cm_flux.json"
+    poll_interval_s: 3600
+  oulu_cosmic_rays:
+    url: "http://cosmicrays.oulu.fi/cgi-bin/cravg.cgi?a=1"
+    poll_interval_s: 3600
+  ncei_geomag_wmm:
+    url: "https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination"
+    note: "WMM API — queries geomagnetic pole position"

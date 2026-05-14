@@ -1,0 +1,19 @@
+[substrate]
+name    = "SUBSTRATE"
+version = "0.1.0"
+
+[layers]
+quantum      = { enabled = true,  weight = 1.5, params = { chi = 256, backend = "cupy" } }
+geomagnetic  = { enabled = true,  weight = 2.0 }
+magnon       = { enabled = true,  weight = 1.2 }
+quantum_lab  = { enabled = true,  weight = 1.0, params = { chi = 512 } }
+solar        = { enabled = true,  weight = 1.3 }
+cosmological = { enabled = true,  weight = 0.8 }
+eeg          = { enabled = true,  weight = 1.8, params = { mode = "auto" } }
+lunar        = { enabled = true,  weight = 1.4 }
+radio        = { enabled = true,  weight = 1.6 }
+seismic      = { enabled = true,  weight = 1.1 }
+
+[output]
+db_path     = "data/substrate.db"
+report_path = "data/processed/substrate_report.json"

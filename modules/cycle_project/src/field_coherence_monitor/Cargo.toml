@@ -1,0 +1,31 @@
+[workspace]
+
+[package]
+name = "field_coherence_monitor"
+version = "0.1.0"
+edition = "2021"
+description = "Real-time geomagnetic field coherence dashboard — cycle_project module 4"
+
+[[bin]]
+name = "field_coherence_monitor"
+path = "src/main.rs"
+
+[dependencies]
+eframe    = "0.27"
+egui      = "0.27"
+egui_plot = "0.27"
+
+ureq       = { version = "2", features = ["json"] }
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono     = "0.4"
+anyhow     = "1"
+
+[profile.release]
+opt-level     = 3
+lto           = "thin"
+codegen-units = 1
+strip         = true
+
+[profile.dev]
+opt-level = 1

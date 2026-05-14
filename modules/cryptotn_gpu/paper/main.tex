@@ -1,0 +1,67 @@
+\documentclass[reprint,aps,prb,superscriptaddress]{revtex4-2}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+
+\title{GPU-Accelerated Tensor Network Dynamics of Radical Pair Spin Systems: \\ 
+Breaking the $\chi=1500$ Barrier on Consumer Hardware}
+
+\author{The Architect}
+\affiliation{SUBSTRATE Research Lab}
+
+\author{Antigravity AI}
+\affiliation{Advanced Agentic Coding, Google DeepMind}
+
+\date{\today}
+
+\begin{abstract}
+The simulation of radical pair spin dynamics in biological systems, such as the avian magnetic compass (Cryptochrome 4a), 
+is limited by the exponential growth of the Hilbert space. Matrix Product State (MPS) methods have successfully 
+extended these simulations, yet previous implementations were capped at bond dimensions of $\chi \le 1500$ due 
+to CPU memory constraints. In this work, we present SUBSTRATE-GPU, an optimized solver utilizing NVIDIA Blackwell 
+architectures and selective recomputation to achieve $\chi=2500$ for systems of up to 40 nuclear spins. 
+Our benchmarks demonstrate a significant reduction in wall-time and VRAM management strategies that enable 
+high-fidelity simulations previously restricted to supercomputing clusters.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+The radical pair mechanism (RPM) is the primary model for magnetoreception in migratory birds...
+
+\section{Methods}
+\subsection{Tensor Network Representation}
+We represent the spin density matrix in Liouville space as a Matrix Product State (MPS)...
+
+\subsection{GPU Optimization}
+Our solver utilizes the \texttt{cuTensorNet} and \texttt{CuPy} libraries to offload tensor contractions 
+to the GPU... We implement a selective recompute strategy for the environments to stay within 
+the 16 GB VRAM limit of the RTX 5060 Ti at $\chi=2500$.
+
+\section{Results}
+\subsection{$\chi$-Convergence}
+As shown in Fig. \ref{fig:scaling}, our implementation achieves convergence at bond dimensions...
+
+\begin{figure}[t]
+    \centering
+    %\includegraphics[width=\linewidth]{chi_scaling.pdf}
+    \caption{Scaling of wall-time per step and VRAM usage as a function of bond dimension $\chi$ for the 40-site ErCry4a system.}
+    \label{fig:scaling}
+\end{figure}
+
+\section{Conclusion}
+The ability to simulate $\chi=2500$ on consumer-grade hardware marks a milestone...
+
+\begin{acknowledgments}
+Supported by the SUBSTRATE Sovereign Infrastructure.
+\end{acknowledgments}
+
+\bibliography{refs}
+
+\end{document}

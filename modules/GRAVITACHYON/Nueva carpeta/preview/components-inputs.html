@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+.fld{font-family:var(--font-mono);font-size:12px;background:#0C0C10;border:1px solid rgba(244,245,247,0.10);color:#F4F5F7;padding:8px 12px;width:100%;box-sizing:border-box;outline:none}
+.fld:focus{border-color:#00F0FF;box-shadow:0 0 0 1px #00F0FF}
+.fld--err{border-color:#FF9000}
+</style>
+</head>
+<body><div class="card">
+<div class="col gap-4">
+  <div class="row gap-4" style="display:grid;grid-template-columns:1fr 1fr;">
+    <div class="col gap-2"><span class="lbl">CHANNEL ID</span><input class="fld" value="H1:GDS-CALIB_STRAIN"></div>
+    <div class="col gap-2"><span class="lbl">SAMPLE RATE</span><input class="fld" value="16384 Hz"></div>
+  </div>
+  <div class="row gap-4" style="display:grid;grid-template-columns:1fr 1fr;">
+    <div class="col gap-2"><span class="lbl" style="color:#00F0FF">FOCUS</span><input class="fld" value="T0:RC-PHASE_LOCK" style="border-color:#00F0FF;box-shadow:0 0 0 1px #00F0FF"></div>
+    <div class="col gap-2"><span class="lbl" style="color:#FF9000">ERROR · OUT OF RANGE</span><input class="fld fld--err" value="-9999.99 Hz"></div>
+  </div>
+  <div class="col gap-2"><span class="lbl">SEARCH</span><div style="position:relative"><svg style="position:absolute;left:10px;top:9px" width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#8A8D99" stroke-width="1.5"><circle cx="9" cy="9" r="6"/><line x1="13" y1="13" x2="17" y2="17"/></svg><input class="fld" style="padding-left:32px" placeholder="QUERY CHANNEL…"></div></div>
+</div>
+</div></body></html>

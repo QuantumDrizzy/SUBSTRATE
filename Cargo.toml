@@ -1,0 +1,31 @@
+[workspace]
+members = [
+    "crates/substrate-core",
+    "crates/substrate-cli",
+    "crates/substrate-db",
+    "crates/substrate-ffi",
+    "crates/substrate-gui",
+    "crates/substrate-gpu",
+    # gravitachyon_rs: requires libzmq (pacman -S zeromq on Arch; vcpkg on Windows).
+    # Uncomment once zmq is available in the build environment.
+    # "modules/GRAVITACHYON/rust",
+]
+resolver = "2"
+
+[workspace.dependencies]
+tokio              = { version = "1",    features = ["full"] }
+serde              = { version = "1",    features = ["derive"] }
+serde_json         = "1"
+anyhow             = "1"
+rusqlite           = { version = "0.31", features = ["bundled"] }
+pyo3               = { version = "0.21", features = ["auto-initialize"] }
+ratatui            = "0.26"
+crossterm          = "0.27"
+eframe             = { version = "0.27", features = ["wgpu"] }
+bytemuck           = { version = "1",    features = ["derive"] }
+egui_plot          = "0.27"
+tracing            = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+clap               = { version = "4",   features = ["derive"] }
+chrono             = { version = "0.4", features = ["serde"] }
+toml               = "0.8"

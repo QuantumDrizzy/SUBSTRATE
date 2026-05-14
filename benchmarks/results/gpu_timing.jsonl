@@ -1,0 +1,4 @@
+{"event": "gpu_krylov_build", "system": "FAD-W_model", "n_sites": 6, "dim": 64, "build_time_ms": 610.78}
+{"event": "gpu_krylov_build", "system": "FAD-W_model", "n_sites": 6, "dim": 64, "build_time_ms": 630.08}
+{"event": "gpu_krylov_build", "system": "FAD-W_model", "n_sites": 6, "dim": 64, "build_time_ms": 743.02}
+{"event": "gpu_krylov_build", "system": "FAD-W_model", "n_sites": 6, "dim": 64, "build_time_ms": 735.18}

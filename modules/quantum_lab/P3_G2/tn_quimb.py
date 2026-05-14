@@ -31,36 +31,50 @@ def u1_character_tensor(beta, cutoff=1):
                     
     return T
 
-def contract_lattice(L=8, beta=1.0):
+def contract_lattice(L=8, beta=1.0, backend='auto'):
     print(f"[Quimb] Construyendo Red Tensorial PEPS para Lattice {L}x{L} (U(1), beta={beta})")
-    print(f"[Quimb] Mapeo de variable de grupo continuo a variable discreta (Cutoff de Bessel = 1)...")
     
     # Construcción del tensor
     T_val = u1_character_tensor(beta, cutoff=1)
     
-    # Ensamblar PEPS 2D explícitamente con Condiciones de Contorno Periódicas (Toroide)
+    # Seleccionar backend
+    actual_backend = 'numpy'
+    if backend == 'cupy' or backend == 'auto':
+        try:
+            import cupy
+            actual_backend = 'cupy'
+            print(f"[Quimb] GPU Backend Detectado: {cupy.cuda.Device(0).compute_capability}")
+        except ImportError:
+            if backend == 'cupy':
+                print("[Quimb] WARNING: cupy requested but not found. Falling back to numpy.")
+            actual_backend = 'numpy'
+
+    # Ensamblar PEPS 2D
     tensors = []
     for i in range(L):
         for j in range(L):
-            inds = (
-                f'v_{i}_{j}',           # Arriba
-                f'v_{(i+1)%L}_{j}',     # Abajo
-                f'h_{i}_{j}',           # Izquierda
-                f'h_{i}_{(j+1)%L}'      # Derecha
-            )
-            tensors.append(qtn.Tensor(T_val, inds=inds, tags={f'T_{i}_{j}'}))
+            inds = (f'v_{i}_{j}', f'v_{(i+1)%L}_{j}', f'h_{i}_{j}', f'h_{i}_{(j+1)%L}')
+            # Convertir a array del backend seleccionado
+            data = T_val
+            if actual_backend == 'cupy':
+                import cupy
+                data = cupy.array(T_val)
+            tensors.append(qtn.Tensor(data, inds=inds, tags={f'T_{i}_{j}'}))
             
     peps = qtn.TensorNetwork(tensors)
     
-    # Contracción aproximada o exacta
-    print(f"[Quimb] Iniciando contracción del volumen 2D...")
+    print(f"[Quimb] Iniciando contracción (Backend: {actual_backend})...")
     try:
-        # optimize='auto-hq' busca el camino de contracción óptimo
-        Z = peps.contract(optimize='auto-hq')
-        log_Z = np.log(Z)
-        print(f"[Quimb] Contracción exitosa.")
-        print(f"        Log(Z) [Función de Partición] = {log_Z:.6f}")
-        print(f"        Energía Libre por plaqueta  = {-log_Z / (L*L):.6f}")
+        # Contracción usando el backend especificado
+        Z = peps.contract(optimize='auto-hq', backend=actual_backend)
+        
+        # Convertir resultado a float de CPU para evitar problemas de serialización
+        if actual_backend == 'cupy':
+            Z = float(Z.get())
+        else:
+            Z = float(Z)
+            
+        print(f"[Quimb] Contracción exitosa. Z={Z:.6e}")
         return Z
     except Exception as e:
         print(f"[Quimb] Error en la contracción: {e}")

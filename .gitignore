@@ -1,16 +1,46 @@
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-dist/
+# Universal .gitignore for Drizzy's Research Ecosystem
+
+# Rust / C++ Build Artifacts
+target/
+**/target/
 build/
-.eggs/
-*.sqlite-shm
-*.sqlite-wal
-.DS_Store
-*.swp
-*.swo
-*~
-.venv/
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+*.pdb
+*.rlib
+*.rmeta
+
+# Python & AI Metadata
+__pycache__/
+*.py[cod]
+*$py.class
 venv/
 .env
+.venv
+env/
+.claude/
+.gemini/
+.agents/
+.qwen/
+.anthropic/
+
+# IDEs & System
+.vscode/
+.idea/
+.gradle/
+.kotlin/
+*.iml
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Data & Logs
+*.log
+data/*.csv
+data/*.json
+!data/.gitkeep
+out/
+dist/
