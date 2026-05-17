@@ -23,6 +23,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import multiprocessing
+import os as _os
 import signal
 import sys
 import time
@@ -33,22 +35,23 @@ _LOG_DIR  = Path.home() / ".cache" / "substrate" / "experiment_0"
 _LOG_FILE = _LOG_DIR / "log.jsonl"
 _MARKER   = Path.home() / ".cache" / "substrate" / "geomagnetic" / "experiment_0_marker.json"
 
-sys.path.insert(0, str(_ROOT / "engine"))
-sys.path.insert(0, str(_ROOT / "modules" / "magnon"))
-
 
 def _ensure_dirs():
     _LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def _sample():
+def _worker(queue: multiprocessing.Queue, root: str):
+    """Runs in a fresh subprocess — all C extensions and SDR buffers die with it."""
+    import sys, os, time
+    sys.path.insert(0, str(root + "/engine"))
+    sys.path.insert(0, str(root + "/modules/magnon"))
+
     t0  = time.time()
     utc = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t0))
     try:
-        import importlib, magnon_layer  # type: ignore
-        importlib.reload(magnon_layer)
+        import magnon_layer  # type: ignore
         data = magnon_layer.run().get("data", {})
-        return {
+        queue.put({
             "t":                 int(t0),
             "utc":               utc,
             "dst_nT":            data.get("dst_nT", 0.0),
@@ -60,10 +63,28 @@ def _sample():
             "b_earth_nT":        data.get("b_earth_nT"),
             "solve_ms":          data.get("solve_ms"),
             "error":             data.get("error"),
-        }
+        })
     except Exception as exc:
-        return {"t": int(t0), "utc": utc, "dst_nT": None,
-                "dst_source": "logger_error", "error": str(exc)}
+        queue.put({"t": int(t0), "utc": utc, "dst_nT": None,
+                   "dst_source": "logger_error", "error": str(exc)})
+
+
+def _sample():
+    """Spawn a subprocess for each sample — memory fully reclaimed on exit."""
+    q = multiprocessing.Queue()
+    p = multiprocessing.Process(target=_worker, args=(q, str(_ROOT)), daemon=True)
+    p.start()
+    p.join(timeout=120)  # 2 min hard timeout
+    if p.exitcode is None:
+        p.terminate()
+        t0 = int(time.time())
+        return {"t": t0, "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t0)),
+                "dst_nT": None, "dst_source": "logger_error", "error": "worker timeout"}
+    if not q.empty():
+        return q.get_nowait()
+    t0 = int(time.time())
+    return {"t": t0, "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t0)),
+            "dst_nT": None, "dst_source": "logger_error", "error": "worker returned nothing"}
 
 
 def _append(record):

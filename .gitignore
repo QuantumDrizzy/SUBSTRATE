@@ -41,6 +41,12 @@ desktop.ini
 *.log
 data/*.csv
 data/*.json
+data/*.sqlite
+data/*.sqlite-shm
+data/*.sqlite-wal
 !data/.gitkeep
 out/
 dist/
+
+# Benchmark results (large JSON/npz outputs)
+modules/cryptotn_gpu/benchmarks/results/

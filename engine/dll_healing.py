@@ -4,13 +4,19 @@ from pathlib import Path
 
 logger = logging.getLogger("substrate.dll_healing")
 
+_healed = False  # guard: os.add_dll_directory() accumulates on every call
+
 def heal():
     """
     Ensures that CUDA and Nvidia DLLs are found by the Python interpreter on Windows.
     This is critical for libraries like CuPy and cuQuantum when running inside an 
     embedded environment or specialized conda/pip setups.
     """
+    global _healed
+    if _healed:
+        return
     if os.name != 'nt':
+        _healed = True
         return
 
     logger.debug("Initializing Windows DLL healing...")
@@ -59,6 +65,8 @@ def heal():
                         os.add_dll_directory(str(bin_path))
     except Exception as e:
         logger.warning(f"DLL healing site-package scan failed: {e}")
+
+    _healed = True
 
 # Run healing on import
 heal()
