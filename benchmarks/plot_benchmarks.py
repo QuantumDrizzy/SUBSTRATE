@@ -119,50 +119,44 @@ def plot_tdvp_convergence():
         print("  skip: no tdvp integrate events")
         return
 
-    times  = [d["integrate_time_s"] for d in data]
-    errors = [d["final_trace"] for d in data]   # |1 - tr(ρ)| — trace error, ideal = 0
-    runs   = list(range(len(data)))
+    runs    = list(range(len(data)))
+    times   = [d["integrate_time_s"] for d in data]
+    errors  = [d["final_trace"] for d in data]      # |1 - tr(rho)|, ideal = 0
+    systems = [d["system"] for d in data]
+    dims    = {d["system"]: d.get("dim", 0) for d in data}
 
-    # Two regimes: standard tolerance (runs 0-17) vs tight tolerance (runs 18+)
-    split = next((i for i, t in enumerate(times) if t > 60), len(times))
-    c_std   = [ACCENT if i < split else PURPLE for i in runs]
+    # Honest grouping: these are DIFFERENT physical systems (different Hilbert
+    # dimension), NOT the same system at two integrator tolerances.
+    uniq = list(dict.fromkeys(systems))
+    palette = {s: col for s, col in zip(uniq, [ACCENT, PURPLE, ORANGE, GREEN])}
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
-    fig.suptitle("SUBSTRATE — TDVP Integration (FAD-W Radical Pair, CPU RK45)",
+    fig.suptitle("SUBSTRATE — TDVP Integration (radical-pair systems, CPU RK45)",
                  fontsize=13, fontweight="bold", color=TEXT)
 
-    # Left: wall time per run
+    # Left: wall time per run, grouped by system
     ax = axes[0]
-    ax.scatter(runs[:split],  times[:split],  color=ACCENT,  s=20, zorder=4, label="Standard tolerance")
-    ax.scatter(runs[split:],  times[split:],  color=PURPLE,  s=20, zorder=4, label="Tight tolerance")
-    ax.plot(runs[:split],  times[:split],  color=ACCENT,  linewidth=1.2, zorder=3)
-    ax.plot(runs[split:],  times[split:],  color=PURPLE,  linewidth=1.2, zorder=3)
-    ax.axhline(np.mean(times[:split]),  color=ACCENT,  linestyle="--", linewidth=0.8, alpha=0.6,
-               label=f"std mean={np.mean(times[:split]):.1f}s")
-    ax.axhline(np.mean(times[split:]),  color=PURPLE,  linestyle="--", linewidth=0.8, alpha=0.6,
-               label=f"tight mean={np.mean(times[split:]):.1f}s")
+    for s in uniq:
+        idx = [i for i in runs if systems[i] == s]
+        ts  = [times[i] for i in idx]
+        ax.scatter(idx, ts, color=palette[s], s=20, zorder=4,
+                   label=f"{s} (dim {dims[s]}) - mean {np.mean(ts):.0f}s")
     ax.set_xlabel("Run #"); ax.set_ylabel("Wall time (s)")
-    ax.set_title("Integration time per run (100 steps, 5 µs)", color=TEXT)
+    ax.set_title("Integration time per run (100 steps, 5 us)", color=TEXT)
     ax.legend(fontsize=8); ax.grid(zorder=0)
 
-    # Right: trace error |1 - tr(ρ)| — lower = better normalization
+    # Right: trace error per run, grouped by system (lower = better)
     ax = axes[1]
-    ax.scatter(runs[:split], errors[:split], color=ACCENT,  s=20, zorder=4)
-    ax.scatter(runs[split:], errors[split:], color=PURPLE,  s=20, zorder=4)
-    ax.plot(runs[:split], errors[:split], color=ACCENT,  linewidth=1.2, zorder=3,
-            label=f"std:   err={errors[0]:.2e}")
-    ax.plot(runs[split:], errors[split:], color=PURPLE,  linewidth=1.2, zorder=3,
-            label=f"tight: err={errors[-1]:.2e}")
+    for s in uniq:
+        idx = [i for i in runs if systems[i] == s]
+        es  = [errors[i] for i in idx]
+        ax.scatter(idx, es, color=palette[s], s=20, zorder=4,
+                   label=f"{s}: |1-tr(rho)| ~ {np.mean(es):.2e}")
     ax.axhline(0.0, color=GREEN, linestyle="--", linewidth=1, label="ideal (err = 0)")
-    ax.set_xlabel("Run #"); ax.set_ylabel("|1 − tr(ρ)|  (trace error, lower = better)")
-    ax.set_title("Trace conservation — tighter tol → 28× lower error", color=TEXT)
+    ax.set_xlabel("Run #"); ax.set_ylabel("|1 - tr(rho)|  (trace error, lower = better)")
+    ax.set_title("Trace conservation per system", color=TEXT)
     ax.set_ylim(-0.0005, max(errors) * 1.3)
     ax.legend(fontsize=8); ax.grid(zorder=0)
-    # Annotation: trade-off
-    ax.annotate(f"3× slower\n28× better",
-                xy=(split, errors[split]), xytext=(split - 4, errors[0] * 0.6),
-                fontsize=8, color=PURPLE, alpha=0.9,
-                arrowprops=dict(arrowstyle="->", color=PURPLE, alpha=0.6))
 
     fig.tight_layout()
     out = PLOTS / "tdvp_convergence.png"
