@@ -1,0 +1,2 @@
+{"system": "ErCry4a_6nuc", "n_nuc": 6, "n_sites": 8, "chi": "exact", "B_mT": [0.0, 0.05], "phi_s": [0.05859, 0.055046], "delta_phi_s_earth": -0.003544, "rmse_vs_hino": null, "wall_time_s": 218.03, "t_max_us": 5.0, "n_steps": 100}
+{"system": "ErCry4a_6nuc", "n_nuc": 6, "n_sites": 8, "chi": "exact", "B_mT": [0.0, 0.05], "phi_s": [0.05859, 0.055046], "delta_phi_s_earth": -0.003544, "rmse_vs_hino": null, "wall_time_s": 219.66, "t_max_us": 5.0, "n_steps": 100}

@@ -1,0 +1,2 @@
+{"system": "FMO_7site", "T_K": 77.0, "t_max_fs": 500.0, "n_steps": 100, "wall_time_s": 0.047, "rmse_vs_tenso": 0.1597, "final_trace": 1.0}
+{"system": "FMO_7site", "T_K": 77.0, "t_max_fs": 500.0, "n_steps": 100, "wall_time_s": 0.044, "rmse_vs_tenso": 0.1597, "final_trace": 1.0}
