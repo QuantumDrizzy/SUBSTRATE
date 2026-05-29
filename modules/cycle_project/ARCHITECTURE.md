@@ -108,9 +108,9 @@ that queries geological events and retrieves thematically aligned myth passages.
 
 | Component | Choice | Justification |
 |-----------|--------|---------------|
-| Vector DB | ChromaDB (local, persistent) | Already used in the orchestrator; sovereign, no cloud |
+| Vector DB | ChromaDB (local, persistent) | Local, sovereign, no cloud |
 | Embeddings | `sentence-transformers` (all-mpnet-base-v2) | Best semantic similarity for ancient texts |
-| LLM backend | Ollama (llama3/mistral local) | Matches the orchestrator stack; no API dependency |
+| LLM backend | Ollama (llama3/mistral local) | Local-first; no API dependency |
 | RAG orchestration | LangChain (minimal) | Familiar; swap for raw similarity search if needed |
 | Corpus | Plain-text from Project Gutenberg + ETCSL | Public domain; licensed for research |
 | Output | Markdown report: myth ↔ geological event correlation table | |

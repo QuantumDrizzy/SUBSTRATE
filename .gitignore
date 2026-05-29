@@ -50,3 +50,9 @@ dist/
 
 # Benchmark results (large JSON/npz outputs)
 modules/cryptotn_gpu/benchmarks/results/
+
+# Private / local-only — never publish
+CLAUDE.md
+scratch/
+modules/simulations/
+modules/pattern_analysis/

@@ -1,84 +1,84 @@
 """
 P3_G2/cuda_accelerator.py
-Kernel de C++/CUDA nativo para el Frente 3.
-Realiza el cálculo de la plaqueta U(1) y su reducción (Suma)
-directamente en la VRAM de la RTX 5060 Ti esquivando el GIL de Python.
+Native C++/CUDA kernel for Front 3.
+Computes the U(1) plaquette (Wilson action) and its block reduction (sum)
+directly in the VRAM of the RTX 5060 Ti, bypassing the Python GIL.
 """
 import numpy as np
 try:
     import cupy as cp
 except ImportError:
     cp = None
-    print("[CUDA] Advertencia: CuPy no detectado. El acelerador CUDA no funcionará.")
+    print("[CUDA] Warning: CuPy not detected. The CUDA accelerator will not run.")
 
 # ==============================================================================
-# EL KERNEL C++ PURO (A compilado en runtime por nvcc)
+# THE RAW C++ KERNEL (JIT-compiled at runtime by nvcc)
 # ==============================================================================
-# Este Kernel calcula cos(P) en cada punto (x,y) de la matriz y
-# luego ejecuta una "Block Reduction" usando memoria compartida
-# y __syncthreads() para garantizar cero errores de carrera.
+# This kernel computes cos(P) at every site (x, y) of the lattice and then
+# performs a block-level reduction using shared memory and __syncthreads()
+# to guarantee a race-free sum.
 # ==============================================================================
 
 cuda_source = r'''
 extern "C" __global__
 void compute_plaquette_kernel(const float* theta, float* block_sums, int L) {
-    // Memoria compartida dinámica para la reducción dentro del bloque de hilos
+    // Dynamic shared memory for the intra-block reduction
     extern __shared__ float sdata[];
-    
-    // Coordenadas absolutas de la malla
+
+    // Absolute lattice coordinates
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
-    
-    // Índice lineal (thread ID) dentro del bloque actual
+
+    // Linear thread ID within the current block
     int tid = threadIdx.y * blockDim.x + threadIdx.x;
-    
+
     float val = 0.0f;
-    
-    // Evitamos salirnos de los límites de la matriz física
+
+    // Stay inside the physical lattice bounds
     if (x < L && y < L) {
-        // Mapeo del tensor 3D de NumPy/CuPy a 1D contiguo en C++:
-        // theta shape es (2, L, L)
-        // Canal 0: enlace x (hat_0)
-        // Canal 1: enlace y (hat_1)
-        
+        // Map the 3D NumPy/CuPy tensor to contiguous 1D in C++:
+        // theta shape is (2, L, L)
+        // Channel 0: link in x (mu_0)
+        // Channel 1: link in y (mu_1)
+
         int offset_c0 = 0 * (L * L);
         int offset_c1 = 1 * (L * L);
-        
+
         int idx_t0_xy = offset_c0 + x * L + y;
         int idx_t1_xy = offset_c1 + x * L + y;
-        
-        // Condiciones de contorno periódicas (Toroide)
+
+        // Periodic boundary conditions (torus)
         int xp1 = (x + 1) % L;
         int yp1 = (y + 1) % L;
-        
+
         int idx_t1_xp1_y = offset_c1 + xp1 * L + y;
         int idx_t0_x_yp1 = offset_c0 + x * L + yp1;
-        
+
         // P(x) = theta_0(x,y) + theta_1(x+1,y) - theta_0(x,y+1) - theta_1(x,y)
         float t0 = theta[idx_t0_xy];
         float t1_shifted = theta[idx_t1_xp1_y];
         float t0_shifted = theta[idx_t0_x_yp1];
         float t1 = theta[idx_t1_xy];
-        
+
         float P = t0 + t1_shifted - t0_shifted - t1;
         val = cosf(P);
     }
-    
-    // Cargamos el valor a la VRAM compartida del bloque
+
+    // Store this thread's value into the block's shared memory
     sdata[tid] = val;
-    __syncthreads(); // BARRERA: Esperamos a que todos los hilos guarden su valor
-    
-    // REDUCCIÓN PARALELA EN ÁRBOL
-    // Sumamos iterativamente las mitades del bloque
+    __syncthreads(); // BARRIER: wait until every thread has written its value
+
+    // PARALLEL TREE REDUCTION
+    // Iteratively sum the halves of the block (assumes power-of-two block size)
     int block_size = blockDim.x * blockDim.y;
     for (unsigned int s = block_size / 2; s > 0; s >>= 1) {
         if (tid < s) {
             sdata[tid] += sdata[tid + s];
         }
-        __syncthreads(); // BARRERA: Sincronizamos en cada paso de la reducción
+        __syncthreads(); // BARRIER: synchronize at every reduction step
     }
-    
-    // El hilo maestro de este bloque (tid == 0) escribe la suma total en global memory
+
+    // The block's master thread (tid == 0) writes the partial sum to global memory
     if (tid == 0) {
         int block_id = blockIdx.y * gridDim.x + blockIdx.x;
         block_sums[block_id] = sdata[0];
@@ -86,45 +86,45 @@ void compute_plaquette_kernel(const float* theta, float* block_sums, int L) {
 }
 '''
 
-# Compilador JIT de CuPy
+# CuPy JIT compiler
 if cp is not None:
     plaquette_kernel = cp.RawKernel(cuda_source, 'compute_plaquette_kernel')
 
 def action_cuda(theta_np, beta, L):
     """
-    Wrapper Python para invocar el Kernel C++ de la acción de Wilson.
+    Python wrapper to invoke the C++ kernel for the Wilson action.
     theta_np: ndarray (2, L, L)
     """
     if cp is None:
-        raise RuntimeError("CuPy no está disponible.")
-        
-    # Copiamos la memoria RAM (Host) a la VRAM (Device)
+        raise RuntimeError("CuPy is not available.")
+
+    # Copy host RAM to device VRAM (H2D)
     theta_gpu = cp.asarray(theta_np, dtype=cp.float32)
-    
-    # Configuramos la topología de Hilos CUDA
+
+    # Configure the CUDA thread topology
     threads_x = 8
     threads_y = 8
-    # Nos aseguramos de que haya bloques suficientes para cubrir todo L
+    # Enough blocks to cover the full lattice L
     blocks_x = (L + threads_x - 1) // threads_x
     blocks_y = (L + threads_y - 1) // threads_y
-    
+
     num_blocks = blocks_x * blocks_y
     block_sums_gpu = cp.zeros(num_blocks, dtype=cp.float32)
-    
-    # 1 float (4 bytes) por hilo en el bloque para shared memory
+
+    # 1 float (4 bytes) per thread in the block for shared memory
     shared_mem_bytes = (threads_x * threads_y) * 4
-    
-    # Ejecutamos el asalto CUDA
-    # firma: (grid, block, args, shared_mem)
-    plaquette_kernel((blocks_x, blocks_y), (threads_x, threads_y), 
-                     (theta_gpu, block_sums_gpu, L), 
+
+    # Launch the kernel
+    # signature: (grid, block, args, shared_mem)
+    plaquette_kernel((blocks_x, blocks_y), (threads_x, threads_y),
+                     (theta_gpu, block_sums_gpu, L),
                      shared_mem=shared_mem_bytes)
-    
-    # Suma final de los bloques (suele ser 1 solo bloque para L=8, así que es trivial)
+
+    # Final reduction over the per-block partial sums (often a single block for small L)
     total_sum = cp.sum(block_sums_gpu)
-    
-    # Acción = -beta * sum(cos(P))
+
+    # Action = -beta * sum(cos(P))
     action_val = -beta * total_sum
-    
-    # Traemos el número final de vuelta a la CPU
+
+    # Bring the final scalar back to the CPU (D2H)
     return action_val.get()

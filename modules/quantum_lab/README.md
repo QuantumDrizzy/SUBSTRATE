@@ -10,11 +10,31 @@ Lattice field theory research facility. Three independent particle physics proje
 
 ### P3 — U(1) gauge theory (CUDA reactor)
 
-| engine | action value | time | speedup |
-|--------|-------------|------|---------|
-| JAX (CPU/GPU) | -5.1589670 | 829 ms | baseline |
-| **CUDA C++ kernel** | **-5.1589675** | **0.578 ms** | **354×** |
-| precision diff | 4.77e-07 | — | bit-perfect |
+Hand-written CUDA kernel (CuPy `RawKernel`, sm_120 Blackwell) for the U(1)
+plaquette/Wilson action, benchmarked against a `@jax.jit` reference. Timing is
+honest: both sides warmed up, JAX `block_until_ready()`, CUDA-event timing for
+kernel-only GPU work, 1000-iteration medians. **JAX runs on CPU in this build**
+(no GPU backend installed), so these are GPU-vs-CPU numbers — stated as such.
+
+| L | cells | JAX-CPU (ms) | CUDA kernel (ms) | CUDA e2e (ms) | kernel speedup | e2e speedup | max\|Δ\| |
+|----:|------:|-------------:|-----------------:|--------------:|---------------:|------------:|--------:|
+| 8   | 128    | 0.0272 | 0.00819 | 0.3767 | 3.3×   | 0.07× | 0.0     |
+| 16  | 512    | 0.0303 | 0.00816 | 0.4207 | 3.7×   | 0.07× | 9.5e-07 |
+| 32  | 2048   | 0.0367 | 0.00819 | 0.4054 | 4.5×   | 0.09× | 4.8e-06 |
+| 64  | 8192   | 0.1812 | 0.00822 | 0.4164 | 22.0×  | 0.44× | 1.9e-05 |
+| 128 | 32768  | 0.4183 | 0.00845 | 0.4470 | 49.5×  | 0.94× | 1.9e-05 |
+| 256 | 131072 | 0.6252 | 0.00870 | 0.4777 | 71.8×  | 1.31× | 3.1e-05 |
+| 512 | 524288 | 2.0204 | 0.01456 | 0.8433 | 138.8× | 2.40× | 4.1e-04 |
+
+**The honest story is the crossover, not a single hero number.** The CUDA kernel
+itself is a stable 8–15 µs across all sizes; the kernel-only *speedup* rises from
+~3× (small L) to ~140–157× at L=512. The run-to-run spread at the top end is
+JAX-CPU **baseline** noise (CPU wall-clock), not kernel variance — the table above
+is one representative run. End-to-end (including H2D/D2H PCIe transfers) only
+breaks even around **L≈128** — below that the workload is transfer/launch-bound
+and the GPU loses. Numerical agreement with JAX is < 1e-3 (fp32 accumulation;
+< 1e-4 up to L≈256, growing to ~4e-4 at L=512 as more terms are summed in fp32).
+Reproduce: `python P3_G2/benchmark_plaquette.py` → `benchmark_plaquette_results.json`.
 
 HMC thermalization: 200 configs on 8×8 lattice, β=1.0, acceptance rate 0.98.
 Plaquette energy: 0.4505 ± 0.0779.
@@ -75,24 +95,35 @@ QUANTUM_LAB/
 
 ---
 
-## the CUDA kernel & Profiling
+## the CUDA kernel
 
-The plaquette action kernel maps each lattice site to a CUDA thread. The gauge field U(1) action is computed as:
+The plaquette action kernel maps each lattice site to a CUDA thread. The gauge
+field U(1) action is computed as:
 
 ```
 S = -β Σ Re(U_μ(n) · U_ν(n+μ) · U_μ(n+ν)* · U_ν(n)*)
 ```
 
-**Optimization via Nsight Compute:** 
-Initial profiling of the JAX implementation using `ncu` (Nsight Compute) revealed severe memory bandwidth bottlenecks due to uncoalesced global memory accesses and high kernel launch overheads. 
-
-To resolve this, I rewrote the computation as a native C++ RawKernel. Each thread computes one plaquette, utilizing block-level reduction via `__syncthreads()` and utilizing shared memory to minimize VRAM roundtrips. This restructuring increased occupancy and achieved a **354× speedup** over the JAX baseline with sub-microsecond precision (diff < 5e-07).
+Each thread computes one plaquette and accumulates into shared memory; a
+block-level reduction (`__syncthreads()`, tree reduction over an 8×8 tile)
+produces one partial sum per block, summed on-device with `cp.sum`. Keeping the
+reduction in shared memory minimizes global-memory traffic, and the 8×8 block
+maps cleanly to the 2D lattice for coalesced loads.
 
 ```cpp
-__global__ void compute_plaquette_kernel(
-    const float* field_cos, const float* field_sin,
-    float* block_results, int L, float beta)
+extern "C" __global__ void compute_plaquette_kernel(
+    const float* theta,        // gauge angles, shape (2, L, L) flattened
+    float* block_sums,          // one partial sum per block
+    int L)                      // lattice size
 ```
+
+**Why kernel-only ≠ end-to-end.** The kernel itself is tiny (8–15 µs across all
+sizes tested). At small L the runtime is dominated by the fixed cost of the H2D
+copy of `theta` plus the D2H copy of the scalar result — that is why the
+end-to-end column only beats JAX-CPU past L≈128. For a single action evaluation
+this is the launch-overhead-bound regime; the win comes when the field already
+lives on device (as it does inside an HMC trajectory, where the same buffer is
+reused across leapfrog steps and no per-step transfer is paid).
 
 ---
 

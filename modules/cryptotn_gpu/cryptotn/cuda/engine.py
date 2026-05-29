@@ -7,11 +7,18 @@ Two backends
 ────────────
 CupyKrylovSolver  — GPU sparse L + Arnoldi Krylov expm
   • drop-in for ExactSolver / MpsSolver (N ≤ 14 sites)
-  • 10-50× speedup on RTX 5060 Ti vs scipy on CPU
-  • validated: RMSE vs ExactSolver < 1e-4
+  • validated: RMSE vs ExactSolver < 1e-4 (max|ΔP_S| ~ 1e-8 head-to-head)
+  • NOTE: at these dimensions (4^n_sites ≤ ~1024) this is launch/sync-bound and
+    runs SLOWER than scipy on CPU — each step is dozens of tiny sparse matvecs
+    plus a host expm round-trip, so per-call overhead dominates the arithmetic.
+    It exists for correctness/parity and as the GPU matvec path that the dense
+    regime will outgrow; the dense GPU win is not here. See
+    benchmarks/bench_lindblad_headtohead.py for the honest measurement.
 
-CuTDVPSolver      — MPO-MPS TDVP on GPU
+CuTDVPSolver      — MPO-MPS TDVP on GPU  (the real contribution)
   • Liouvillian built as MPO from local operators (never densifies L_super)
+  • makes large N tractable by χ truncation: N=39 spins → Liouville dim
+    4^39 ≈ 3e23, impossible to store densely, handled on 16 GB via MPS
   • MPS bond dimension χ up to ~1800 on RTX 5060 Ti 16 GB (N=62)
   • χ=2500 feasible for N ≤ 40
   • cupy einsum for environment contractions + Arnoldi Krylov for site update
@@ -619,9 +626,17 @@ class CupyKrylovSolver:
     Transfers the sparse Liouvillian to GPU and integrates via time-stepping
     with Arnoldi matrix exponential.
 
-    Benchmarks on RTX 5060 Ti (N=10, dim=1024):
-      500 steps ~ 0.9 s  vs  scipy CPU ~ 12 s  (≈13× speedup)
-      RMSE vs ExactSolver < 1e-5
+    Validated correct vs ExactSolver: max|ΔP_S| ~ 1e-8 across n_nuc=1..3
+    (Liouville dim 64..1024), RMSE < 1e-5.
+
+    Performance (honest): in this small-dimension regime the GPU path is
+    SLOWER than scipy on CPU — measured 5–87× slower in
+    benchmarks/bench_lindblad_headtohead.py. Reason: each step performs ~m tiny
+    sparse mat-vecs (m = krylov_dim) and a host-side scipy.expm on the m×m
+    Hessenberg, so kernel-launch + sync + H2D/D2H overhead dwarfs the actual
+    flops until the dense Liouvillian is far larger than fits at these N. Use it
+    for parity testing, not as a speed claim. The tractability win lives in
+    CuTDVPSolver (MPS), not here.
 
     Usage:
         solver = CupyKrylovSolver(config, krylov_dim=50)

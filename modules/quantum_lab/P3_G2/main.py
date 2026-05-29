@@ -26,39 +26,31 @@ def main():
     # ==============================================================
     print("\n>>> PHASE A: Substrate Shadow Sampling (HMC)")
     
-    # --- PRECISION BENCHMARK: JAX vs RAW CUDA ---
+    # --- PRECISION CHECK: JAX vs RAW CUDA ---
+    # Numerical-agreement check only. For honest timing (warmed both sides,
+    # CUDA-event kernel timing, 1000-iter medians, size sweep, roofline
+    # crossover) run: python P3_G2/benchmark_plaquette.py
     try:
         from cuda_accelerator import action_cuda
         from lattice_hmc import action as action_jax
         import jax.numpy as jnp
-        import time
-        
-        print("\n[CUDA Benchmark] Initializing C++ Reactor...")
+
+        print("\n[CUDA] Verifying kernel against JAX reference (values only)...")
         test_theta = np.random.uniform(-np.pi, np.pi, (2, L, L)).astype(np.float32)
-        
-        # JAX Test
-        t0 = time.perf_counter()
-        action_j = action_jax(jnp.array(test_theta), beta)
-        t_jax = time.perf_counter() - t0
-        
-        # CUDA Test (first run might be slower due to NVCC JIT compilation, doing a warmup)
-        _ = action_cuda(test_theta, beta, L)
-        
-        t0 = time.perf_counter()
-        action_c = action_cuda(test_theta, beta, L)
-        t_cuda = time.perf_counter() - t0
-        
+
+        action_j = float(action_jax(jnp.array(test_theta), beta))
+        action_c = float(action_cuda(test_theta, beta, L))
+
         print(f"  JAX Action  : {action_j:.7f}")
         print(f"  CUDA Action : {action_c:.7f}")
         diff = abs(action_j - action_c)
-        if diff < 1e-5:
-            print(f"  [SUCCESS] Bit-perfect precision verified (Diff: {diff:.2e})")
+        if diff < 1e-4:
+            print(f"  [OK] Kernel matches JAX within fp32 tolerance (diff: {diff:.2e})")
         else:
-            print(f"  [WARNING] Divergence detected (Diff: {diff:.2e})")
-        print(f"  JAX Time  : {t_jax*1000:.3f} ms")
-        print(f"  CUDA Time : {t_cuda*1000:.3f} ms (Even faster with larger grids!)")
+            print(f"  [WARNING] Divergence detected (diff: {diff:.2e})")
+        print("  Timing intentionally omitted here -> see benchmark_plaquette.py")
     except Exception as e:
-        print(f"[CUDA Benchmark] Error: {e}")
+        print(f"[CUDA] Precision check error: {e}")
         
     configs_hmc = generate_u1_configs(L=L, beta=beta, n_configs=200, n_steps=10, eps=0.1)
     
