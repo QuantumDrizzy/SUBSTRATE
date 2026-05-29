@@ -96,11 +96,10 @@ def plot_plaquette_roofline():
     ax.set_ylabel("Wall time per call (ms, log)")
     ax.set_title("Absolute latency — transfers dominate at small L", color=TEXT)
     ax.legend(fontsize=8, loc="upper left"); ax.grid(zorder=0, which="both", alpha=0.4)
-    ax.text(0.98, 0.04, "JAX = CPU backend (no GPU JAX in this build)",
-            transform=ax.transAxes, ha="right", va="bottom",
-            fontsize=7, color=TEXT, alpha=0.45)
-
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.05, 1, 1))
+    fig.text(0.5, 0.01,
+             "JAX runs on CPU backend (no GPU JAX in this build) - speedup is GPU-vs-CPU, stated honestly",
+             ha="center", va="bottom", fontsize=7, color=TEXT, alpha=0.5)
     out = PLOTS / "plaquette_roofline.png"
     fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=DARK)
     plt.close(fig)

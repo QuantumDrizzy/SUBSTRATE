@@ -28,9 +28,9 @@ kernel-only GPU work, 1000-iteration medians. **JAX runs on CPU in this build**
 
 **The honest story is the crossover, not a single hero number.** The CUDA kernel
 itself is a stable 8–15 µs across all sizes; the kernel-only *speedup* rises from
-~3× (small L) to ~140–157× at L=512. The run-to-run spread at the top end is
-JAX-CPU **baseline** noise (CPU wall-clock), not kernel variance — the table above
-is one representative run. End-to-end (including H2D/D2H PCIe transfers) only
+~3× (small L) to roughly 139–157× at L=512 across runs (this table's run: 139×).
+That top-end spread is JAX-CPU **baseline** noise (CPU wall-clock), not kernel
+variance — the table above is one representative run. End-to-end (including H2D/D2H PCIe transfers) only
 breaks even around **L≈128** — below that the workload is transfer/launch-bound
 and the GPU loses. Numerical agreement with JAX is < 1e-3 (fp32 accumulation;
 < 1e-4 up to L≈256, growing to ~4e-4 at L=512 as more terms are summed in fp32).
