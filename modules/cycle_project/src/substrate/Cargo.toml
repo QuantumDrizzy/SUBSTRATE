@@ -1,0 +1,36 @@
+[package]
+name = "substrate"
+version = "0.1.0"
+edition = "2021"
+description = "SUBSTRATE Quantum Research Platform"
+
+[[bin]]
+name = "substrate"
+path = "src/main.rs"
+
+[dependencies]
+# UI
+eframe    = "0.27"
+egui      = "0.27"
+egui_plot = "0.27"
+
+# Python bridge (PyO3)
+pyo3 = { version = "0.21", features = ["auto-initialize"] }
+
+# Async runtime (para fetch de datos en background)
+tokio = { version = "1", features = ["rt-multi-thread", "sync", "time"] }
+
+# Datos / IPC
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono     = "0.4"
+anyhow     = "1"
+
+[profile.release]
+opt-level     = 3
+lto           = "thin"
+codegen-units = 1
+strip         = true
+
+[profile.dev]
+opt-level = 1

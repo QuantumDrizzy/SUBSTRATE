@@ -205,14 +205,15 @@ def run_material_bridge(
         ctx = zmq.Context()
         pub = ctx.socket(zmq.PUB)
         pub.bind("tcp://*:5562")
-        time.sleep(0.1)  # warmup
+        pub.setsockopt(zmq.LINGER, 1000)  # wait up to 1s on close
+        time.sleep(0.5)  # warmup — give LOGOS time to detect new publisher
         frame = json.dumps({
             "ts":    time.time(),
             "event": "substrate_result",
             "payload": result,
         })
-        pub.send_string(f"nexus.quantum {frame}", flags=zmq.NOBLOCK)
-        time.sleep(0.05)  # let subscribers drain
+        pub.send_string(f"nexus.quantum {frame}")  # blocking send
+        time.sleep(0.2)  # let subscribers drain before close
         pub.close()
         ctx.term()
         log.info("[NEXUS.QUANTUM] substrate_result published on :5562")

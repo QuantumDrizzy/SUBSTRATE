@@ -28,15 +28,128 @@ controls.maxPolarAngle = Math.PI / 2;
 let time = 0;
 let activeViz = mesh;
 
+// --- CONFIGURACIÓN DE ÓRBITAS NEURO-CUÁNTICAS (BCI) ---
+let bciCalm = 0.5;
+let bciFocus = 0.5;
+let orbitTime = 0;
+
+const maxTrailPoints = 150;
+const bciOrbitGeom1 = new THREE.BufferGeometry();
+const bciOrbitGeom2 = new THREE.BufferGeometry();
+const trailPositions1 = new Float32Array(maxTrailPoints * 3);
+const trailPositions2 = new Float32Array(maxTrailPoints * 3);
+
+bciOrbitGeom1.setAttribute('position', new THREE.BufferAttribute(trailPositions1, 3));
+bciOrbitGeom2.setAttribute('position', new THREE.BufferAttribute(trailPositions2, 3));
+
+const bciOrbitMat1 = new THREE.LineBasicMaterial({ color: 0x00ffcc, linewidth: 2, transparent: true, opacity: 0.8 });
+const bciOrbitMat2 = new THREE.LineBasicMaterial({ color: 0xf72585, linewidth: 2, transparent: true, opacity: 0.8 });
+
+const bciOrbit1 = new THREE.Line(bciOrbitGeom1, bciOrbitMat1);
+const bciOrbit2 = new THREE.Line(bciOrbitGeom2, bciOrbitMat2);
+scene.add(bciOrbit1);
+scene.add(bciOrbit2);
+
+// Esferas para los cuerpos celestes/entrelazados BCI
+const sphereGeom = new THREE.SphereGeometry(1.5, 16, 16);
+const sphereMat1 = new THREE.MeshPhongMaterial({ color: 0x00ffcc, emissive: 0x002211, shininess: 100 });
+const sphereMat2 = new THREE.MeshPhongMaterial({ color: 0xf72585, emissive: 0x220011, shininess: 100 });
+const bciSphere1 = new THREE.Mesh(sphereGeom, sphereMat1);
+const bciSphere2 = new THREE.Mesh(sphereGeom, sphereMat2);
+scene.add(bciSphere1);
+scene.add(bciSphere2);
+
 function animate() {
     time += 0.01;
+    orbitTime += 0.015;
     controls.update(); // Actualizar interacción de usuario
+
+    // --- CÁLCULO DE ÓRBITAS ACOPLADAS AL BCI ---
+    const C = bciCalm; // 0.0 (estrés) a 1.0 (calma)
+
+    // 1. Keplerian Lemniscate (Figura de 8, Calma Total)
+    const A = 24.0;
+    const den = 1.0 + Math.pow(Math.sin(orbitTime), 2);
+    const x8 = (A * Math.cos(orbitTime)) / den;
+    const y8 = (A * Math.sin(orbitTime) * Math.cos(orbitTime)) / den;
+    const z8 = 3.0 * Math.sin(2.0 * orbitTime);
+
+    // 2. Inspiral / Caos post-Newtoniano (Estrés Cognitivo)
+    const tPeriod = 8.0; 
+    const cycleTime = (orbitTime % tPeriod) / tPeriod; 
+    const R = A * (0.05 + 0.95 * Math.pow(1.0 - cycleTime, 1.5));
+    const freqSpiraling = 6.0 + 12.0 * cycleTime;
+    const xSpir = R * Math.cos(orbitTime * freqSpiraling);
+    const ySpir = R * Math.sin(orbitTime * freqSpiraling);
+    const zSpir = R * 0.25 * Math.sin(orbitTime * freqSpiraling);
+
+    // Mezclar posiciones de órbita según calm_index
+    const p1x = C * x8 + (1 - C) * xSpir;
+    const p1y = C * y8 + (1 - C) * ySpir;
+    const p1z = C * z8 + (1 - C) * zSpir;
+
+    const p2x = -p1x;
+    const p2y = -p1y;
+    const p2z = -p1z;
+
+    // Actualizar esferas (mapeamos z a Y para que floten arriba de la cuadrícula)
+    bciSphere1.position.set(p1x, p1z, p1y);
+    bciSphere2.position.set(p2x, p2z, p2y);
+
+    // Actualizar trails de órbita
+    const arr1 = bciOrbitGeom1.attributes.position.array;
+    const arr2 = bciOrbitGeom2.attributes.position.array;
+
+    for (let i = maxTrailPoints - 1; i > 0; i--) {
+        arr1[i * 3] = arr1[(i - 1) * 3];
+        arr1[i * 3 + 1] = arr1[(i - 1) * 3 + 1];
+        arr1[i * 3 + 2] = arr1[(i - 1) * 3 + 2];
+
+        arr2[i * 3] = arr2[(i - 1) * 3];
+        arr2[i * 3 + 1] = arr2[(i - 1) * 3 + 1];
+        arr2[i * 3 + 2] = arr2[(i - 1) * 3 + 2];
+    }
+
+    arr1[0] = p1x;
+    arr1[1] = p1z;
+    arr1[2] = p1y;
+
+    arr2[0] = p2x;
+    arr2[1] = p2z;
+    arr2[2] = p2y;
+
+    bciOrbitGeom1.attributes.position.needsUpdate = true;
+    bciOrbitGeom2.attributes.position.needsUpdate = true;
+
+    // --- DEFORMACIÓN DE LA MALLA RELATIVISTA DEL ESPACIOTIEMPO ---
     if (activeViz && activeViz.geometry && activeViz.geometry.attributes.position) {
         const positions = activeViz.geometry.attributes.position.array;
-        for (let i = 0; i < positions.length; i += 3) {
-            const x = positions[i]; const y = positions[i + 1];
-            let z = (activeViz.type === 'Points') ? Math.sin(x/5 + time)*2 : Math.sin(x/10+time)*Math.cos(y/10+time)*5 + Math.sin(x/5-time*0.5)*2;
-            positions[i+2] = z;
+        
+        if (activeViz === mesh) {
+            // Modulamos la deformación del plano: calma alta = ondas suaves; estrés alto = espigas caóticas
+            let amp = 1.5 + 8.5 * (1.0 - bciCalm);
+            let freq = 0.08 + 0.15 * bciFocus;
+            
+            for (let i = 0; i < positions.length; i += 3) {
+                const x = positions[i];
+                const y = positions[i + 1];
+                let z = Math.sin(x * freq + time) * Math.cos(y * freq + time) * amp;
+                
+                // Distancia a las esferas en el plano horizontal (x, y)
+                const d1 = Math.sqrt(Math.pow(x - p1x, 2) + Math.pow(y - p1y, 2));
+                const d2 = Math.sqrt(Math.pow(x - p2x, 2) + Math.pow(y - p2y, 2));
+                // Singularidades gravitatorias locales (pozos de potencial)
+                const gravityWell = -16.0 / (d1 + 1.8) - 16.0 / (d2 + 1.8);
+                
+                positions[i + 2] = z + gravityWell;
+            }
+        } else {
+            // Comportamiento por defecto para otros modos
+            for (let i = 0; i < positions.length; i += 3) {
+                const x = positions[i]; const y = positions[i + 1];
+                let z = (activeViz.type === 'Points') ? Math.sin(x/5 + time)*2 : Math.sin(x/10+time)*Math.cos(y/10+time)*5 + Math.sin(x/5-time*0.5)*2;
+                positions[i+2] = z;
+            }
         }
         activeViz.geometry.attributes.position.needsUpdate = true;
     }
@@ -163,6 +276,13 @@ setInterval(async () => {
             const coherenceEl = document.querySelector('.stat-value');
             if (coherenceEl && data.coherence) {
                 coherenceEl.textContent = `${data.coherence} Coherence`;
+            }
+
+            if (data.calm_index !== undefined) {
+                bciCalm = parseFloat(data.calm_index);
+            }
+            if (data.ratio_enfoque !== undefined) {
+                bciFocus = parseFloat(data.ratio_enfoque);
             }
 
             const latencyEl = document.getElementById('engine-latency');

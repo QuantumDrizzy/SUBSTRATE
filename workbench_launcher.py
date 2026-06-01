@@ -20,6 +20,20 @@ def run_engine_background():
     try:
         while True:
             data = engine.calculate_quantum_fields()
+            # Intentar leer la telemetria mental en vivo del BCI
+            import json
+            calm_index = 0.5
+            ratio_enfoque = 1.0
+            try:
+                mind_state_path = Path("C:/Users/Drizzy/Desktop/simulations/mind_state.json")
+                if mind_state_path.exists():
+                    with open(mind_state_path, 'r') as f:
+                        m_data = json.load(f)
+                        calm_index = m_data["metrics"]["calm_index_final"]
+                        ratio_enfoque = m_data["metrics"]["ratio_enfoque_final"]
+            except Exception as e:
+                pass
+
             global latest_telemetry
             latest_telemetry = {
                 "q_strain_h1": f"{data.q_strain_h1:.2e}",
@@ -32,10 +46,12 @@ def run_engine_background():
                 "freq_hz": f"{data.freq_hz:.1f}",
                 "gds_lock_pro": f"{data.gds_lock_pro:.3f}",
                 "q_phase_ctc": f"{data.q_phase_ctc/3.14:.3f}π",
+                "coherence": f"{calm_index * 100:.1f}%",
+                "calm_index": calm_index,
+                "ratio_enfoque": ratio_enfoque,
                 "timestamp": data.timestamp
             }
             # También lo enviamos por ZMQ por si otros procesos escuchan
-            import json
             from dataclasses import asdict
             engine.publisher.send_string(f"SUBSTRATE_STATE {json.dumps(asdict(data))}")
             

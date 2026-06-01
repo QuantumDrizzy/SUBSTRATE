@@ -37,7 +37,7 @@ env/
 Thumbs.db
 desktop.ini
 
-# Data & Logs
+# Data & Logs — code is published, data stays local (the rule)
 *.log
 data/*.csv
 data/*.json
@@ -48,6 +48,18 @@ data/*.sqlite-wal
 out/
 dist/
 
+# Heavy data artifacts anywhere (datasets, processed outputs, figures from runs).
+# These are regenerated locally from code; never bloat the repo with them.
+**/data/raw/
+**/data/processed/
+*.parquet
+*.npz
+*.npy
+*.h5
+*.hdf5
+# Generated run figures (keep hand-made diagrams in docs/ or assets/ instead)
+**/data/**/*.png
+
 # Benchmark results (large JSON/npz outputs)
 modules/cryptotn_gpu/benchmarks/results/
 
@@ -56,3 +68,4 @@ CLAUDE.md
 scratch/
 modules/simulations/
 modules/pattern_analysis/
+*.tmp
