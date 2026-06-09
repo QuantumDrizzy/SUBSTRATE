@@ -17,11 +17,37 @@ At every scale, the same question: **what is the substrate generating the observ
 - CMB fluctuations → large-scale structure
 - Neural state (EEG) → physical parameter modulation ← KHAOS bridge
 
+## Measured, across scales (RTX 5060 Ti, sm_120)
+
+Each figure comes from the module's own benchmark/analysis pipeline
+(`benchmarks/plot_benchmarks.py`, `modules/*/`) — real data, honest baselines.
+
+**Compute — U(1) lattice gauge: a hand-written CUDA plaquette kernel vs JAX-CPU.**
+The kernel crosses from overhead-bound to compute-bound; *kernel-only* reaches ~139× at
+L=512, while *end-to-end* (with H2D/D2H transfers) only breaks even near L≈128 — stated
+honestly, since JAX runs on its CPU backend here (GPU-vs-CPU, not GPU-vs-GPU):
+
+![U(1) plaquette roofline](benchmarks/plots/plaquette_roofline.png)
+
+**Quantum biology — radical-pair dynamics (FAD-W, ErCry4a) on the GPU.** TDVP integration
+is trace-conserving (|1−tr ρ| tracked, right); the GPU Krylov matrix build runs in ~680 ms
+at dim 64 (left):
+
+| | |
+|:---:|:---:|
+| ![GPU Krylov build time](benchmarks/plots/gpu_krylov_timing.png) | ![TDVP convergence](benchmarks/plots/tdvp_convergence.png) |
+
+**Geomagnetic — dipole-moment (VADM) forecast: the civilizational protection layer.**
+An LSTM ensemble (N=50, MC-Dropout) with a 90% prediction interval, against the Sint-2000
+record and the Laschamp-excursion threshold:
+
+![VADM LSTM forecast](modules/cycle_project/data/processed/vadm_lstm_forecast.png)
+
 ## Modules
 
 | Module | Status | Description |
 |--------|--------|-------------|
-| `quantum_lab` | ✅ Operational | Lattice gauge theory, tensor networks, hand-written U(1) plaquette CUDA kernel (roofline crossover, kernel-only up to 154× vs JAX-CPU) |
+| `quantum_lab` | ✅ Operational | Lattice gauge theory, tensor networks, hand-written U(1) plaquette CUDA kernel (roofline crossover, kernel-only ~139× at L=512 vs JAX-CPU; 139–157× across runs) |
 | `cryptotn_gpu` | ✅ Operational | Radical pair quantum biology, χ tensor engine |
 | `magnon` | ✅ Operational | Avian magnetoreception, Lindblad dynamics |
 | `cycle_project` | ✅ Operational | Geomagnetic field: detection, simulation, RAG, monitor, forecast |
