@@ -13,7 +13,7 @@ def plot_metric(project, metric_name):
         return
     
     plt.figure(figsize=(10, 5))
-    # Usar estilo oscuro tipo dashboard para la vibra iNFAMOUS
+    # Usar estilo oscuro tipo dashboard
     plt.style.use('dark_background')
     
     plt.plot(timestamps, values, marker='o', linestyle='-', linewidth=2, markersize=8, color='cyan')
