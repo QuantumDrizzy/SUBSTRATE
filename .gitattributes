@@ -1,0 +1,7 @@
+# Language stats should reflect the real implementation (Python/Rust/C++/CUDA/WGSL).
+*.ipynb linguist-documentation
+*.tex   linguist-documentation
+*.sh           linguist-vendored
+*.ps1          linguist-vendored
+CMakeLists.txt linguist-vendored
+*.cmake        linguist-vendored
