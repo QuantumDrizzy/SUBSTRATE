@@ -69,3 +69,16 @@ scratch/
 modules/simulations/
 modules/pattern_analysis/
 *.tmp
+
+# --- Data / datasets / trained models / vector DBs — LOCAL ONLY (his data), not shown on GitHub ---
+/data/
+modules/*/data/
+*.npy
+*.npz
+*.parquet
+*.pkl
+*.pt
+*.pth
+*.db
+# Exploration notebooks — local
+*.ipynb
