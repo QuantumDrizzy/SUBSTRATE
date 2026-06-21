@@ -41,7 +41,16 @@ at dim 64 (left):
 An LSTM ensemble (N=50, MC-Dropout) with a 90% prediction interval, against the Sint-2000
 record and the Laschamp-excursion threshold:
 
-![VADM LSTM forecast](modules/cycle_project/data/processed/vadm_lstm_forecast.png)
+**Astrophysics — real NASA / TESS data.** A disintegrating planet (TIC 400799224): raw TESS
+photometry phase-folded at its 19.77-day period, recovering the asymmetric **dust-tail transit**
+— a real "shadow" pulled from real MAST data:
+
+![Disintegrating-planet transit, TIC 400799224 (real TESS data)](docs/showcase/exoplanet-disintegrating-TIC400799224.png)
+
+**A galaxy's rotation curve** — the **flat** total-velocity curve vs. the Keplerian decay of the
+visible matter: the classic **dark-matter** signature (NFW halo). A model, cleanly visualised:
+
+![Galaxy rotation curve — the dark-matter signature](docs/showcase/galaxy-rotation-dark-matter.png)
 
 ## Modules
 
