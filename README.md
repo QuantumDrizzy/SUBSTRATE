@@ -41,16 +41,20 @@ at dim 64 (left):
 An LSTM ensemble (N=50, MC-Dropout) with a 90% prediction interval, against the Sint-2000
 record and the Laschamp-excursion threshold:
 
-**Astrophysics — real NASA / TESS data.** A disintegrating planet (TIC 400799224): raw TESS
-photometry phase-folded at its 19.77-day period, recovering the asymmetric **dust-tail transit**
-— a real "shadow" pulled from real MAST data:
+**Astrophysics — a real exoplanet, recovered from real NASA/TESS data.** The standard transit
+pipeline (`lightkurve` → MAST → detrend → BLS periodogram → fold) on **WASP-18 b**, a hot Jupiter:
+BLS recovers the period **0.9416 d** (true value 0.9415 d) and a **1.1 % transit** — the classic
+"shadow" dip, straight from the spacecraft photometry:
 
-![Disintegrating-planet transit, TIC 400799224 (real TESS data)](docs/showcase/exoplanet-disintegrating-TIC400799224.png)
+![WASP-18 b transit recovered from real TESS data](docs/showcase/exoplanet-transit-WASP18.png)
 
 **A galaxy's rotation curve** — the **flat** total-velocity curve vs. the Keplerian decay of the
 visible matter: the classic **dark-matter** signature (NFW halo). A model, cleanly visualised:
 
 ![Galaxy rotation curve — the dark-matter signature](docs/showcase/galaxy-rotation-dark-matter.png)
+
+*(Also tracked from real TESS data: the disintegrating planet TIC 400799224 — its erratic dust-tail
+dips show per-orbit but wash out under naïve folding; an honest hard case, in `docs/showcase/`.)*
 
 ## Modules
 
