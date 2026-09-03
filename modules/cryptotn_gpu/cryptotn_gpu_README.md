@@ -148,4 +148,7 @@ VRAM budget at χ = 2500:
 
 ## license
 
-MIT. Fork of [KenHino/radicalpair-tensornetwork](https://github.com/KenHino/radicalpair-tensornetwork).
+MIT, inherited from the upstream project this is a fork of:
+[KenHino/radicalpair-tensornetwork](https://github.com/KenHino/radicalpair-tensornetwork).
+See [LICENSE](LICENSE). This directory is carved out of the proprietary
+licence covering the rest of the repository.
