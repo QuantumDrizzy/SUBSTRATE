@@ -25,8 +25,15 @@ The terms above do NOT apply to the following directory, which is derived
 from third-party software and remains under its original licence:
 
   modules/cryptotn_gpu/
-      Derived from KenHino/radicalpair-tensornetwork, MIT licence.
+      Derived from KenHino/radicalpair-tensornetwork, licensed under the
+      Apache License, Version 2.0.
       See modules/cryptotn_gpu/LICENSE.
 
 Modifications to that directory by the copyright holder are contributed
-under the same MIT licence as the upstream work.
+under the same Apache License 2.0 as the upstream work.
+
+The following files happen to sit in that directory but are not derived
+from the upstream work, and remain under the proprietary terms above:
+
+  modules/cryptotn_gpu/khaos_core_README.md
+  modules/cryptotn_gpu/github_profile_README.md

@@ -148,7 +148,7 @@ VRAM budget at χ = 2500:
 
 ## license
 
-MIT, inherited from the upstream project this is a fork of:
+Apache License 2.0, inherited from the upstream project this is a fork of:
 [KenHino/radicalpair-tensornetwork](https://github.com/KenHino/radicalpair-tensornetwork).
 See [LICENSE](LICENSE). This directory is carved out of the proprietary
 licence covering the rest of the repository.
