@@ -31,9 +31,3 @@ from third-party software and remains under its original licence:
 
 Modifications to that directory by the copyright holder are contributed
 under the same Apache License 2.0 as the upstream work.
-
-The following files happen to sit in that directory but are not derived
-from the upstream work, and remain under the proprietary terms above:
-
-  modules/cryptotn_gpu/khaos_core_README.md
-  modules/cryptotn_gpu/github_profile_README.md
