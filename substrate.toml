@@ -19,15 +19,8 @@ seismic      = { enabled = true,  weight = 1.1 }
 enabled     = true
 weight      = 1.0
 description = "Multi-domain physics simulations: cosmology, quantum, astrophysics"
-submodules  = ["cosmology", "quantum", "astrophysics", "bci_bridge", "sonification"]
+submodules  = ["cosmology", "quantum", "astrophysics", "sonification"]
 data_dir    = "modules/simulations/data"
-
-[layers.simulations.bci_bridge]
-enabled     = true
-weight      = 1.8
-description = "KHAOS EEG → physics parameter bridge (mind_state.json IPC)"
-mind_state_ttl_secs = 15
-connects_to = ["khaos", "helios"]
 
 [layers.pattern_analysis]
 enabled     = true

@@ -15,7 +15,6 @@ At every scale, the same question: **what is the substrate generating the observ
 - Geomagnetic field → civilizational protection layer
 - Heliospheric dynamics → cosmic ray modulation
 - CMB fluctuations → large-scale structure
-- Neural state (EEG) → physical parameter modulation ← KHAOS bridge
 
 ## Measured, across scales (RTX 5060 Ti, sm_120)
 
@@ -76,7 +75,6 @@ dips show per-orbit but wash out under naïve folding; an honest hard case, in `
 | `cosmology` | 28 | Alcubierre warp drive, Kerr-Newman geodesics, big bang/BBN/CMB, Hawking evaporation, wormholes, Gödel CTC, Taub-NUT, ER=EPR, big rip, Unruh effect |
 | `quantum` | 13 | 3-body quantum chaos (RK4 + Euler-Maruyama), Wheeler delayed choice, quantum Zeno, instanton tunneling, QCD confinement, LQG spin networks, Orch-OR microtubules, Landauer-Bekenstein, fractal dimension |
 | `astrophysics` | 14 | Real TESS/NASA transit data (TOI-1444, TIC98796344, TIC400799224), exoplanet hunting, JWST, biosignatures, dark matter galaxy rotation, radial velocity validation |
-| `bci_bridge` | 8 | KHAOS EEG → physics parameter bridge: Kerr-Newman spin ← calm_index, Orch-OR coherence ← alpha power, Schumann nexus, Muse 2 UDP/OSC stack |
 | `sonification` | 6 | Physics-to-audio mappings, spectral analysis, 48-file WAV corpus |
 
 **Data corpus** (in `simulations/data/`): 48 WAV · 64 PNG · 8 JSON telemetry files
@@ -85,7 +83,7 @@ dips show per-orbit but wash out under naïve folding; an honest hard case, in `
 
 Rust FFT engine (Welch PSD, spectral slope β, centroid, entropy, flatness) + Python cross-modal analyzer (audio × visual × telemetry correlation matrices, PCA, Ward dendrogram). 47 WAVs analyzed, `unified_analysis.json` produced.
 
-**Connects to:** KHAOS (BCI telemetry), HELIOS (time-series correlation)
+**Connects to:** HELIOS (time-series correlation)
 
 ## Quick Start (Arch Linux / iNFAMØUS)
 

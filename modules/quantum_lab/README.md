@@ -178,7 +178,6 @@ pyvista
 ## related
 
 - [CryptoTN-GPU](https://github.com/QuantumDrizzy/CryptoTN-GPU) — GPU tensor networks for quantum biology
-- [KHAOS](https://github.com/QuantumDrizzy/KHAOS) — BCI kernel with CUDA DSP
 - [quantum-geo-metrology](https://github.com/QuantumDrizzy/quantum-geo-metrology) — geophysical quantum computing
 
 ---

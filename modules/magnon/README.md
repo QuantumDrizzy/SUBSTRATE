@@ -171,7 +171,6 @@ MAGNON/
 ## related
 
 - [CryptoTN-GPU](https://github.com/QuantumDrizzy/CryptoTN-GPU) — GPU tensor networks for quantum biology (arXiv). Same radical pair physics, tensor network approach for large Hilbert spaces.
-- [KHAOS](https://github.com/QuantumDrizzy/KHAOS) — BCI kernel.
 - [Q-NAA](https://github.com/QuantumDrizzy/Q-NAA) — Quantum Neural Attention Analyzer.
 
 ---
