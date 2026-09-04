@@ -15,7 +15,15 @@ detector = GravitonDetector()
 bridge = HolographicMERA()
 
 fig = plt.figure(figsize=(16, 9))
-plt.style.use('dark_background')
+# Light theme, shared across the repository's figures.
+BG, TEXT, GRID = "#ffffff", "#1a1d21", "#d8dce0"
+ACCENT, PURPLE = "#0b6ea8", "#6a3d9a"
+plt.rcParams.update({
+    "figure.facecolor": BG, "axes.facecolor": BG, "savefig.facecolor": BG,
+    "axes.edgecolor": GRID, "axes.labelcolor": TEXT,
+    "xtick.color": TEXT, "ytick.color": TEXT,
+    "text.color": TEXT, "grid.color": GRID,
+})
 
 # Panel 1: 3D Spacetime Mesh
 ax1 = fig.add_subplot(221, projection='3d')
@@ -48,17 +56,17 @@ def update(frame):
     X, Y = np.meshgrid(x, y)
     Z = np.kron(substrate, np.ones((2, 2)))
     
-    cmap = plt.cm.magma if is_graviton else plt.cm.winter
+    cmap = plt.cm.viridis if is_graviton else plt.cm.cividis
     ax1.plot_surface(X, Y, Z, cmap=cmap, alpha=0.8, edgecolor='none')
-    ax1.set_title(f"SPACETIME BULK (LIGO SIGNAL)\nSTABILITY: {t_dec*100:.1f}%", color='cyan')
+    ax1.set_title(f"SPACETIME BULK (LIGO SIGNAL)\nSTABILITY: {t_dec*100:.1f}%", color=TEXT)
     ax1.view_init(elev=30, azim=frame % 360)
     ax1.set_axis_off()
     
     # --- RENDER PANEL 2: HOLOGRAPHIC HEATMAP ---
     ax2.clear()
     heatmap = boundary.reshape((2, 4))
-    im = ax2.imshow(heatmap, cmap='inferno', aspect='auto')
-    ax2.set_title("HOLOGRAPHIC BOUNDARY (MERA LATENT STATE)", color='magenta')
+    im = ax2.imshow(heatmap, cmap='viridis', aspect='auto')
+    ax2.set_title("HOLOGRAPHIC BOUNDARY (MERA LATENT STATE)", color=TEXT)
     ax2.set_axis_off()
     
     # --- RENDER PANEL 3: TACHYON ACCURACY TRACKER ---
@@ -69,11 +77,11 @@ def update(frame):
         history_accuracy.pop(0)
         history_time.pop(0)
         
-    ax3.plot(history_time, history_accuracy, color='#00ffcc', linewidth=2)
-    ax3.fill_between(history_time, 0.5, history_accuracy, color='#00ffcc', alpha=0.2)
-    ax3.axhline(y=0.5, color='white', linestyle='--', alpha=0.5, label="CHANCE LEVEL")
+    ax3.plot(history_time, history_accuracy, color=ACCENT, linewidth=2)
+    ax3.fill_between(history_time, 0.5, history_accuracy, color=ACCENT, alpha=0.2)
+    ax3.axhline(y=0.5, color=PURPLE, linestyle='--', alpha=0.5, label="CHANCE LEVEL")
     ax3.set_ylim(0.4, 1.0)
-    ax3.set_title("RETROCAUSAL COUPLING INTENSITY (AI DECODER)", color='#00ffcc')
+    ax3.set_title("RETROCAUSAL COUPLING INTENSITY (AI DECODER)", color=TEXT)
     ax3.set_ylabel("PREDICTION PROB")
     ax3.grid(alpha=0.1)
     

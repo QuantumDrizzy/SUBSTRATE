@@ -6,33 +6,44 @@ import argparse
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "reports")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# Light theme, shared across the repository's figures: these plots end up in
+# READMEs and PDFs that are read on white.
+BG, TEXT, GRID, ACCENT = "#ffffff", "#1a1d21", "#d8dce0", "#0b6ea8"
+
+
 def plot_metric(project, metric_name):
     timestamps, values = compare_metric(project, metric_name)
     if not values:
-        print(f"No hay datos para '{metric_name}' en el proyecto '{project}'")
+        print(f"No data for '{metric_name}' in project '{project}'")
         return
-    
+
+    plt.rcParams.update({
+        "figure.facecolor": BG, "axes.facecolor": BG, "savefig.facecolor": BG,
+        "axes.edgecolor": GRID, "axes.labelcolor": TEXT,
+        "xtick.color": TEXT, "ytick.color": TEXT,
+        "text.color": TEXT, "grid.color": GRID,
+    })
     plt.figure(figsize=(10, 5))
-    # Usar estilo oscuro tipo dashboard
-    plt.style.use('dark_background')
-    
-    plt.plot(timestamps, values, marker='o', linestyle='-', linewidth=2, markersize=8, color='cyan')
-    plt.title(f"[{project}] - Evolución de {metric_name}", fontsize=14, color='white')
-    plt.xlabel("Fecha de Ejecución", fontsize=10)
+
+    plt.plot(timestamps, values, marker='o', linestyle='-', linewidth=2,
+             markersize=8, color=ACCENT)
+    plt.title(f"[{project}] — {metric_name} over time", fontsize=14, color=TEXT)
+    plt.xlabel("Run date", fontsize=10)
     plt.ylabel(metric_name, fontsize=10)
     plt.xticks(rotation=45, ha='right')
-    plt.grid(alpha=0.2, color='white')
+    plt.grid(alpha=0.5, color=GRID)
     plt.tight_layout()
-    
+
     output_path = os.path.join(OUTPUT_DIR, f"{project}_{metric_name}.png")
-    plt.savefig(output_path, dpi=150, facecolor='black', edgecolor='black')
-    print(f"[Plot] Gráfico de telemetría renderizado en {output_path}")
+    plt.savefig(output_path, dpi=150, facecolor=BG, edgecolor=BG)
+    print(f"[Plot] Telemetry chart written to {output_path}")
     plt.close()
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Plot Quantum Lab Metrics")
-    parser.add_argument("project", type=str, help="Nombre del proyecto (ej. P3_G2)")
-    parser.add_argument("metric", type=str, help="Nombre de la métrica a graficar (ej. diff_cuda)")
+    parser = argparse.ArgumentParser(description="Plot Quantum Lab metrics")
+    parser.add_argument("project", type=str, help="Project name (e.g. P3_G2)")
+    parser.add_argument("metric", type=str, help="Metric to plot (e.g. diff_cuda)")
     args = parser.parse_args()
-    
+
     plot_metric(args.project, args.metric)

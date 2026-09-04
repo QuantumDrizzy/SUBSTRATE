@@ -16,16 +16,21 @@ RESULTS = Path(__file__).parent / "results"
 PLOTS   = Path(__file__).parent / "plots"
 PLOTS.mkdir(exist_ok=True)
 
-DARK   = "#0d1117"
-ACCENT = "#00d4ff"
-GREEN  = "#39ff14"
-ORANGE = "#ff6b35"
-PURPLE = "#b388ff"
-TEXT   = "#e6edf3"
-GRID   = "#21262d"
+# Light theme. Figures end up in READMEs, papers and PDFs, all of which are
+# read on white; the accents below are chosen to stay legible there and to
+# survive greyscale printing.
+BG     = "#ffffff"
+PANEL  = "#f6f7f9"
+ACCENT = "#0b6ea8"
+GREEN  = "#2e7d32"
+ORANGE = "#d95f02"
+PURPLE = "#6a3d9a"
+TEXT   = "#1a1d21"
+GRID   = "#d8dce0"
 
 plt.rcParams.update({
-    "figure.facecolor": DARK, "axes.facecolor": DARK,
+    "figure.facecolor": BG, "axes.facecolor": BG,
+    "savefig.facecolor": BG,
     "axes.edgecolor": GRID, "axes.labelcolor": TEXT,
     "xtick.color": TEXT, "ytick.color": TEXT,
     "text.color": TEXT, "grid.color": GRID,
@@ -101,7 +106,7 @@ def plot_plaquette_roofline():
              "JAX runs on CPU backend (no GPU JAX in this build) - speedup is GPU-vs-CPU, stated honestly",
              ha="center", va="bottom", fontsize=7, color=TEXT, alpha=0.5)
     out = PLOTS / "plaquette_roofline.png"
-    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=DARK)
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=BG)
     plt.close(fig)
     print(f"  [ok] {out}")
 
@@ -159,7 +164,7 @@ def plot_tdvp_convergence():
 
     fig.tight_layout()
     out = PLOTS / "tdvp_convergence.png"
-    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=DARK)
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=BG)
     plt.close(fig)
     print(f"  [ok] {out}")
 
@@ -230,7 +235,7 @@ def plot_ercry4a():
 
     fig.tight_layout()
     out = PLOTS / "ercry4a_sensitivity.png"
-    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=DARK)
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=BG)
     plt.close(fig)
     print(f"  [ok] {out}")
 
@@ -260,7 +265,7 @@ def plot_gpu_krylov():
     ax.legend(fontsize=10); ax.grid(zorder=0)
     fig.tight_layout()
     out = PLOTS / "gpu_krylov_timing.png"
-    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=DARK)
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=BG)
     plt.close(fig)
     print(f"  [ok] {out}")
 

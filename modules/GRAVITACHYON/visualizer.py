@@ -3,6 +3,10 @@ import numpy as np
 from ligo_loader import download_ligo_data
 from penrose_collapse import PenroseCollapse
 
+# Light theme, shared across the repository's figures.
+BG, TEXT, GRID = "#ffffff", "#1a1d21", "#d8dce0"
+ACCENT, PURPLE = "#0b6ea8", "#6a3d9a"
+
 def generate_gravitachyon_viz():
     print("[VISUALIZER] Procesando sustrato de LIGO para visualización...")
     ligo_wave = download_ligo_data()
@@ -19,36 +23,41 @@ def generate_gravitachyon_viz():
     # Simular puntos de acoplamiento (donde la estabilidad permite la señal)
     coupling_points = []
     for s in stability:
-        if s > 0.15: # Umbral de acoplamiento
+        if s > 0.15:  # coupling threshold
             coupling_points.append(1)
         else:
             coupling_points.append(0)
             
     # 2. Plotting
     plt.figure(figsize=(12, 8))
-    plt.style.use('dark_background')
+    plt.rcParams.update({
+        "figure.facecolor": BG, "axes.facecolor": BG, "savefig.facecolor": BG,
+        "axes.edgecolor": GRID, "axes.labelcolor": TEXT,
+        "xtick.color": TEXT, "ytick.color": TEXT,
+        "text.color": TEXT, "grid.color": GRID,
+    })
     
-    # Subplot 1: Onda Gravitatoria de LIGO
+    # Subplot 1: LIGO gravitational wave
     plt.subplot(2, 1, 1)
-    plt.plot(time, ligo_wave, color='#00ffcc', alpha=0.8, label="Evento GW150914 (LIGO Strain)")
-    plt.title("GRAVITACHYON: Análisis de Sustrato Real", fontsize=16, color='cyan')
-    plt.ylabel("Amplitud Relativa", fontsize=12)
-    plt.grid(alpha=0.1)
+    plt.plot(time, ligo_wave, color=ACCENT, alpha=0.9, label="GW150914 event (LIGO strain)")
+    plt.title("GRAVITACHYON — real substrate analysis", fontsize=16, color=TEXT)
+    plt.ylabel("Relative amplitude", fontsize=12)
+    plt.grid(alpha=0.5)
     plt.legend()
     
-    # Subplot 2: Estabilidad y Acoplamiento Retrocausal
+    # Subplot 2: stability and retrocausal coupling
     plt.subplot(2, 1, 2)
-    plt.fill_between(time, stability, color='#ff00ff', alpha=0.3, label="Estabilidad Espacio-Temporal")
-    plt.scatter(time[::50], np.array(coupling_points)[::50] * 0.5, color='white', s=10, label="Puntos de Fuga Taquiónica")
+    plt.fill_between(time, stability, color=PURPLE, alpha=0.35, label="Spacetime stability")
+    plt.scatter(time[::50], np.array(coupling_points)[::50] * 0.5, color=TEXT, s=10, label="Tachyonic leakage points")
     
-    plt.xlabel("Tiempo (segundos)", fontsize=12)
-    plt.ylabel("Índice de Acoplamiento", fontsize=12)
+    plt.xlabel("Time (s)", fontsize=12)
+    plt.ylabel("Coupling index", fontsize=12)
     plt.ylim(0, 1.1)
-    plt.grid(alpha=0.1)
+    plt.grid(alpha=0.5)
     plt.legend()
     
     plt.tight_layout()
-    print("[VISUALIZER] Mostrando Dashboard Técnico. Cierra la ventana para terminar.")
+    print("[VISUALIZER] Rendering technical dashboard. Close the window to finish.")
     plt.show()
 
 if __name__ == "__main__":

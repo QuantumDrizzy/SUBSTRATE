@@ -24,41 +24,45 @@ ROOT = Path(__file__).parent.parent
 PROCESSED = ROOT / "data" / "processed"
 
 # ── Shared palette ────────────────────────────────────────────────────────────
-BG_FIG  = "#0d0d1a"
-BG_AX   = "#1a1a2e"
-C_LINE  = "#4fc3f7"
-C_ANOM  = "#ef5350"
-C_WARN  = "#ffb300"
-C_OK    = "#66bb6a"
-C_ALERT = "#ef5350"
-C_PURP  = "#bb86fc"
-WHITE   = "white"
+# Light theme: this figure is published in READMEs and PDFs read on white.
+# The accents are dark enough to stay legible there and in greyscale print.
+BG_FIG  = "#ffffff"
+BG_AX   = "#ffffff"
+PANEL   = "#f6f7f9"
+EDGE    = "#d8dce0"
+C_LINE  = "#0b6ea8"
+C_ANOM  = "#c0392b"
+C_WARN  = "#d95f02"
+C_OK    = "#2e7d32"
+C_ALERT = "#c0392b"
+C_PURP  = "#6a3d9a"
+FG      = "#1a1d21"
 
 plt.rcParams.update({
-    "text.color": WHITE,
-    "axes.labelcolor": WHITE,
-    "xtick.color": WHITE,
-    "ytick.color": WHITE,
-    "axes.edgecolor": "#444466",
+    "text.color": FG,
+    "axes.labelcolor": FG,
+    "xtick.color": FG,
+    "ytick.color": FG,
+    "axes.edgecolor": EDGE,
     "axes.facecolor": BG_AX,
     "figure.facecolor": BG_FIG,
-    "grid.color": WHITE,
-    "grid.alpha": 0.15,
+    "grid.color": EDGE,
+    "grid.alpha": 0.5,
     "font.family": "DejaVu Sans",
 })
 
 
 def style_ax(ax, title, xlabel="", ylabel=""):
     ax.set_facecolor(BG_AX)
-    ax.set_title(title, color=WHITE, fontsize=10, fontweight="bold", pad=7)
+    ax.set_title(title, color=FG, fontsize=10, fontweight="bold", pad=7)
     if xlabel:
-        ax.set_xlabel(xlabel, color=WHITE, fontsize=8)
+        ax.set_xlabel(xlabel, color=FG, fontsize=8)
     if ylabel:
-        ax.set_ylabel(ylabel, color=WHITE, fontsize=8)
-    ax.grid(True, alpha=0.15)
-    ax.tick_params(colors=WHITE, labelsize=7)
+        ax.set_ylabel(ylabel, color=FG, fontsize=8)
+    ax.grid(True, alpha=0.5)
+    ax.tick_params(colors=FG, labelsize=7)
     for spine in ax.spines.values():
-        spine.set_edgecolor("#444466")
+        spine.set_edgecolor(EDGE)
 
 
 # ── Panel A: VADM History + Anomalies ────────────────────────────────────────
@@ -112,9 +116,9 @@ def panel_b(ax):
     norm = Normalize(vmin=years.min(), vmax=years.max())
     cmap = cm.plasma
 
-    ax.plot(lons, lats, color="white", linewidth=0.8, alpha=0.35, zorder=1)
+    ax.plot(lons, lats, color=FG, linewidth=0.8, alpha=0.35, zorder=1)
     sc = ax.scatter(lons, lats, c=years, cmap=cmap, norm=norm,
-                    s=55, zorder=3, edgecolors="white", linewidths=0.5)
+                    s=55, zorder=3, edgecolors=FG, linewidths=0.5)
 
     # drift arrow on last segment
     ax.annotate("",
@@ -125,17 +129,17 @@ def panel_b(ax):
     for i, (yr, lat, lon) in enumerate(pole_data):
         offset = (3, 0.05) if i % 2 == 0 else (-3, -0.15)
         ax.text(lon + offset[0], lat + offset[1], str(yr),
-                color=WHITE, fontsize=6.5, alpha=0.9)
+                color=FG, fontsize=6.5, alpha=0.9)
 
     cbar = plt.colorbar(sc, ax=ax, orientation="vertical",
                         pad=0.02, shrink=0.75, aspect=20)
-    cbar.set_label("Year", color=WHITE, fontsize=7)
-    cbar.ax.yaxis.set_tick_params(color=WHITE, labelsize=6)
-    plt.setp(cbar.ax.yaxis.get_ticklabels(), color=WHITE)
+    cbar.set_label("Year", color=FG, fontsize=7)
+    cbar.ax.yaxis.set_tick_params(color=FG, labelsize=6)
+    plt.setp(cbar.ax.yaxis.get_ticklabels(), color=FG)
 
     ax.set_xlim(-180, 180)
     ax.set_ylim(80, 90)
-    ax.axvline(0, color="#444466", linewidth=0.5, alpha=0.6)
+    ax.axvline(0, color=EDGE, linewidth=0.5, alpha=0.6)
     style_ax(ax, "Magnetic North Pole Drift (2000–2025)",
              "Longitude (°)", "Latitude (°N)")
 
@@ -148,7 +152,7 @@ def panel_c(ax):
         ax.imshow(img, aspect="auto")
         ax.axis("off")
         ax.set_title("Forward Projection (LSTM Ensemble + Instrumental)",
-                     color=WHITE, fontsize=10, fontweight="bold", pad=7)
+                     color=FG, fontsize=10, fontweight="bold", pad=7)
         return
 
     # fallback: simple exponential decay
@@ -171,7 +175,7 @@ def panel_c(ax):
         ax.axvline(2423, color="orange", linestyle=":", linewidth=1.2)
         ax.text(2500, ax.get_ylim()[1] * 0.85, "~2,423 yr",
                 color="orange", fontsize=7)
-        ax.legend(fontsize=7, facecolor=BG_AX, edgecolor="#444466", framealpha=0.7)
+        ax.legend(fontsize=7, facecolor=BG_AX, edgecolor=EDGE, framealpha=0.9)
     except Exception as e:
         ax.text(0.5, 0.5, f"Forecast data unavailable\n{e}",
                 transform=ax.transAxes, ha="center", va="center",
@@ -227,23 +231,23 @@ def panel_d(ax):
 
     ax.set_xticks(range(len(col_labels)))
     ax.set_xticklabels(col_labels, rotation=45, ha="right",
-                       fontsize=5.5, color=WHITE)
+                       fontsize=5.5, color=FG)
     ax.set_yticks(range(len(row_labels)))
-    ax.set_yticklabels(row_labels, fontsize=6.5, color=WHITE)
+    ax.set_yticklabels(row_labels, fontsize=6.5, color=FG)
 
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
             v = matrix[i, j]
             star = "***" if v > 0.5 else "**" if v > 0.35 else "*" if v > 0.2 else ""
             if star:
-                tc = "black" if v > 0.45 else WHITE
+                tc = "black" if v > 0.45 else FG
                 ax.text(j, i, star, ha="center", va="center",
                         fontsize=5, color=tc, fontweight="bold")
 
     cbar = plt.colorbar(im, ax=ax, pad=0.02, shrink=0.75, aspect=20)
-    cbar.set_label("Cosine sim.", color=WHITE, fontsize=7)
-    cbar.ax.yaxis.set_tick_params(color=WHITE, labelsize=6)
-    plt.setp(cbar.ax.yaxis.get_ticklabels(), color=WHITE)
+    cbar.set_label("Cosine sim.", color=FG, fontsize=7)
+    cbar.ax.yaxis.set_tick_params(color=FG, labelsize=6)
+    plt.setp(cbar.ax.yaxis.get_ticklabels(), color=FG)
 
     style_ax(ax, "Myth–Event Cosine Similarity (bootstrap CI)")
     ax.grid(False)
@@ -256,7 +260,7 @@ def panel_e(ax):
         img = plt.imread(str(png))
         ax.imshow(img, aspect="auto")
         ax.axis("off")
-        ax.set_title("VADM Spectral Power (FFT)", color=WHITE,
+        ax.set_title("VADM Spectral Power (FFT)", color=FG,
                      fontsize=10, fontweight="bold", pad=7)
         return
 
@@ -322,16 +326,16 @@ def panel_f(ax):
     else:
         prob_color, prob_label = C_ALERT, "ALERT"
 
-    ax.set_title("Current Field Assessment", color=WHITE,
+    ax.set_title("Current Field Assessment", color=FG,
                  fontsize=10, fontweight="bold", pad=7)
 
     lines = [
         (f"Pre-excursion:  {prob*100:.1f}%  →  {prob_label}", prob_color, 10.5, True),
-        ("", WHITE, 8, False),
+        ("", FG, 8, False),
         (f"VADM @ +1 kyr:   {v1kyr:.3f} ± 0.205", C_LINE, 9.5, False),
         (f"VADM @ +5 kyr:   {v5kyr:.3f} ± 0.208", C_LINE, 9.5, False),
         (f"Instr. threshold: ~{thresh:,} yr",       C_WARN, 9.5, False),
-        ("", WHITE, 8, False),
+        ("", FG, 8, False),
         ("Dominant cycle:  26,533 yr (precession)", C_PURP, 9.5, False),
         ("Pole drift:      +55 km/yr → Siberia",    C_WARN, 9.5, False),
     ]
@@ -346,8 +350,8 @@ def panel_f(ax):
     # probability gauge bar
     bar_y = 0.08
     ax.add_patch(plt.Rectangle((0.07, bar_y), 0.86, 0.045,
-                               transform=ax.transAxes, facecolor="#2a2a44",
-                               edgecolor="#444466", linewidth=0.8, clip_on=False))
+                               transform=ax.transAxes, facecolor=PANEL,
+                               edgecolor=EDGE, linewidth=0.8, clip_on=False))
     fill_w = max(0.005, 0.86 * prob)
     ax.add_patch(plt.Rectangle((0.07, bar_y), fill_w, 0.045,
                                transform=ax.transAxes, facecolor=prob_color,
@@ -382,12 +386,12 @@ def main():
     for ax, lbl in zip([ax_a, ax_b, ax_c, ax_d, ax_e, ax_f],
                         ["A", "B", "C", "D", "E", "F"]):
         ax.text(-0.01, 1.06, lbl, transform=ax.transAxes,
-                fontsize=15, fontweight="bold", color=WHITE,
+                fontsize=15, fontweight="bold", color=FG,
                 va="top", ha="right", clip_on=False)
 
     fig.suptitle(
         "CYCLE_PROJECT — Geomagnetic Field Analysis & Forward Probe",
-        fontsize=15, fontweight="bold", color=WHITE, y=0.995,
+        fontsize=15, fontweight="bold", color=FG, y=0.995,
     )
     fig.text(
         0.5, 0.973,
